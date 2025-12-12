@@ -1,0 +1,92 @@
+services:
+  # ===========================================
+  # Redis - Caching for n8n
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: nocode-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nocode-network
+
+  # ===========================================
+  # n8n - Workflow Automation
+  # ===========================================
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: nocode-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=America/Argentina/Buenos_Aires
+      # Redis queue mode (optional, for scaling)
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      # Database - using SQLite by default, can switch to Postgres
+      - DB_TYPE=sqlite
+      - DB_SQLITE_DATABASE=/home/node/.n8n/database.sqlite
+      # Uncomment below to use Supabase Postgres instead:
+      # - DB_TYPE=postgresdb
+      # - DB_POSTGRESDB_HOST=host.docker.internal
+      # - DB_POSTGRESDB_PORT=5432
+      # - DB_POSTGRESDB_DATABASE=postgres
+      # - DB_POSTGRESDB_USER=postgres
+      # - DB_POSTGRESDB_PASSWORD=your-super-secret-and-long-postgres-password
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --spider -q http://127.0.0.1:5678/healthz || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - nocode-network
+
+  # ===========================================
+  # Appsmith - Low-Code App Builder
+  # ===========================================
+  appsmith:
+    image: appsmith/appsmith-ce:latest
+    container_name: nocode-appsmith
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - appsmith_data:/appsmith-stacks
+    environment:
+      - APPSMITH_DISABLE_TELEMETRY=true
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/api/v1/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - nocode-network
+
+volumes:
+  redis_data:
+  n8n_data:
+  appsmith_data:
+
+
+networks:
+  nocode-network:
+    driver: bridge

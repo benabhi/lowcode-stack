@@ -1,0 +1,14 @@
+# Generated folders
+supabase-repo/
+supabase/
+!supabase/docker-compose.override.yml
+
+# Environment files with secrets
+supabase/.env
+
+# Docker volumes
+volumes/
+
+# OS files
+.DS_Store
+Thumbs.db
