@@ -50,6 +50,11 @@ RUN ansible-galaxy install -r requirements.yml
 # Copiar el resto del proyecto
 COPY . .
 
+# Configurar Ansible con paths absolutos (evita warning de world-writable)
+ENV ANSIBLE_ROLES_PATH=/ansible/roles:/root/.ansible/roles
+ENV ANSIBLE_INVENTORY=/ansible/inventory/production/hosts.yml
+ENV ANSIBLE_CALLBACKS_ENABLED=profile_tasks
+
 # Crear directorio para SSH keys
 RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
 

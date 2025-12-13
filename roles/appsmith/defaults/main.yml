@@ -15,9 +15,9 @@ appsmith_container_name: "{{ lowcode_appsmith_container_name | default('lowcode-
 appsmith_port: "{{ lowcode_appsmith_port | default(8081) }}"
 appsmith_internal_port: 80
 
-# Encryption secrets from vault
-appsmith_encryption_password: "{{ vault_appsmith_encryption_password | default('') }}"
-appsmith_encryption_salt: "{{ vault_appsmith_encryption_salt | default('') }}"
+# Encryption secrets (from auto-generated secrets)
+appsmith_encryption_password: "{{ lowcode_secrets.appsmith_encryption_password | default('') }}"
+appsmith_encryption_salt: "{{ lowcode_secrets.appsmith_encryption_salt | default('') }}"
 
 # Telemetry and tracking
 appsmith_disable_telemetry: true
@@ -47,4 +47,4 @@ appsmith_domain: "{{ lowcode_domain_appsmith | default('appsmith.localhost') }}"
 appsmith_supabase_enabled: false
 appsmith_supabase_host: "{{ lowcode_server_ip | default('127.0.0.1') }}"
 appsmith_supabase_port: "{{ lowcode_supabase_db_port | default(5432) }}"
-appsmith_supabase_password: "{{ vault_supabase_postgres_password | default('') }}"
+appsmith_supabase_password: "{{ lowcode_secrets.supabase_postgres_password | default('') }}"

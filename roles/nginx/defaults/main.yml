@@ -33,9 +33,11 @@ nginx_security_headers:
   X-XSS-Protection: "1; mode=block"
   Referrer-Policy: "strict-origin-when-cross-origin"
 
-# Basic auth
+# Basic auth (from auto-generated secrets)
 nginx_basic_auth_enabled: "{{ lowcode_basic_auth_enabled | default(true) }}"
-nginx_htpasswd_users: "{{ vault_nginx_htpasswd_users | default([]) }}"
+nginx_htpasswd_users:
+  - username: "{{ lowcode_secrets.nginx_htpasswd_username | default('admin') }}"
+    password: "{{ lowcode_secrets.nginx_htpasswd_password | default('') }}"
 
 # Sites configuration (from all.yml)
 nginx_sites: "{{ nginx_sites | default([]) }}"

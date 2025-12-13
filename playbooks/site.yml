@@ -2,10 +2,10 @@
 # Main Playbook - Deploy Complete Low-Code Stack
 # ==============================================================================
 # This playbook deploys the entire lowcode-stack to Ubuntu 24.04 LTS servers.
+# Secrets are auto-generated on first deployment and displayed for safekeeping.
 #
 # Usage:
-#   ansible-playbook playbooks/site.yml --ask-vault-pass
-#   ansible-playbook playbooks/site.yml --vault-password-file .vault_pass
+#   docker compose run --rm ansible playbooks/site.yml --ask-pass
 #
 # Tags:
 #   --tags common,docker     # Only system setup
@@ -53,6 +53,10 @@
       tags: always
 
   roles:
+    # Phase 0: Generate/Load secrets
+    - role: secrets
+      tags: [secrets, always]
+
     # Phase 1: System configuration
     - role: common
       tags: [common, setup]

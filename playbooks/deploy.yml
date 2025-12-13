@@ -5,7 +5,7 @@
 # Run setup.yml first if the server is not prepared.
 #
 # Usage:
-#   ansible-playbook playbooks/deploy.yml --ask-vault-pass
+#   docker compose run --rm ansible playbooks/deploy.yml --ask-pass
 # ==============================================================================
 
 ---
@@ -36,6 +36,9 @@
           =============================================
 
   roles:
+    - role: secrets
+      tags: [secrets, always]
+
     - role: redis
       tags: [redis, deploy]
 

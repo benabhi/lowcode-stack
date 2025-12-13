@@ -10,171 +10,60 @@ Coleccion profesional de Ansible para desplegar un stack completo de desarrollo 
 - **Redis** - Cache para n8n
 - **Nginx** - Reverse proxy con SSL (Let's Encrypt)
 
+## Caracteristicas
+
+- **Secretos auto-generados**: No necesitas configurar contraseñas manualmente
+- **100% replicable**: Clona, configura dominio/IP y despliega
+- **Docker integrado**: Contenedor Ansible incluido para Windows/macOS
+- **SSL automatico**: Certificados Let's Encrypt configurados automaticamente
+
 ## Requisitos
 
 - **Control Node**: Docker (Windows/macOS) o Python 3.10+ con Ansible (Linux)
 - **Target Node**: Ubuntu 24.04 LTS
 - **Dominios**: Configurados apuntando al servidor (DNS)
 - **Puertos**: 22 (SSH), 80 (HTTP), 443 (HTTPS)
-- **SSH Key**: Configurada para acceso al servidor
-
-## Instalacion
-
-### Opcion 1: Docker (Recomendado para Windows/macOS)
-
-El proyecto incluye un contenedor Docker con Ansible preconfigurado.
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/lowcode-stack.git
-cd lowcode-stack
-
-# Construir el contenedor
-docker compose build
-
-# Verificar que funciona
-docker compose run --rm ansible --help
-
-# Verificar conexion al servidor
-docker compose run --rm ansible all -m ping
-```
-
-**Comandos principales:**
-
-```bash
-# Despliegue completo
-docker compose run --rm ansible playbooks/site.yml --ask-vault-pass
-
-# Solo setup del sistema
-docker compose run --rm ansible playbooks/setup.yml
-
-# Solo servicios
-docker compose run --rm ansible playbooks/deploy.yml --ask-vault-pass
-
-# Dry run (sin cambios)
-docker compose run --rm ansible playbooks/site.yml --check --diff
-
-# Shell interactivo
-docker compose run --rm --entrypoint bash ansible
-```
-
-### Opcion 2: Virtualenv (Linux/macOS)
-
-```bash
-# Instalar Python y venv
-# Ubuntu/Debian:
-sudo apt update && sudo apt install -y python3 python3-pip python3-venv
-
-# macOS:
-brew install python3
-
-# Crear y activar virtualenv
-python3 -m venv venv
-source venv/bin/activate
-
-# Instalar Ansible
-pip install --upgrade pip
-pip install ansible
-
-# Verificar instalacion
-ansible --version
-
-# Instalar roles de Galaxy
-ansible-galaxy install -r requirements.yml
-```
-
-### Opcion 3: Gestor de paquetes del sistema
-
-```bash
-# Ubuntu/Debian
-sudo apt update && sudo apt install -y ansible
-
-# macOS con Homebrew
-brew install ansible
-
-# Instalar roles de Galaxy
-ansible-galaxy install -r requirements.yml
-```
 
 ## Quick Start
 
 ### 1. Clonar y construir
 
 ```bash
-git clone https://github.com/tu-usuario/lowcode-stack.git
+git clone https://github.com/benabhi/lowcode-stack.git
 cd lowcode-stack
 
-# Si usas Docker (Windows/macOS):
+# Construir contenedor Ansible
 docker compose build
-
-# Si usas virtualenv (Linux):
-# source venv/bin/activate && ansible-galaxy install -r requirements.yml
 ```
 
-### 2. Configurar el inventario
+### 2. Configurar
 
 Editar `inventory/production/hosts.yml`:
 
 ```yaml
-all:
-  children:
-    lowcode_servers:
-      hosts:
-        lowcode-prod:
-          ansible_host: TU_IP_AQUI
-          ansible_user: root
+lowcode-prod:
+  ansible_host: TU_IP_AQUI
+  ansible_user: root
 ```
-
-### 3. Configurar variables
 
 Editar `inventory/production/group_vars/all.yml`:
 
 ```yaml
-# Dominios
 lowcode_domain_base: "tudominio.com"
-lowcode_domain_supabase: "supabase.tudominio.com"
-lowcode_domain_n8n: "n8n.tudominio.com"
-lowcode_domain_appsmith: "appsmith.tudominio.com"
-
-# Email para Let's Encrypt
 lowcode_letsencrypt_email: "admin@tudominio.com"
 ```
 
-### 4. Generar secretos
+### 3. Desplegar
 
 ```bash
-chmod +x files/scripts/generate_secrets.sh
-./files/scripts/generate_secrets.sh > secrets.txt
-```
+# Con contraseña SSH:
+docker compose run --rm ansible playbooks/site.yml --ask-pass
 
-Copiar los valores generados a `inventory/production/group_vars/all/vault.yml`.
-
-**Importante**: Generar las JWT keys de Supabase en:
-https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys
-
-### 5. Encriptar secretos con Ansible Vault
-
-```bash
-ansible-vault encrypt inventory/production/group_vars/all/vault.yml
-```
-
-Guardar la contrasena del vault de forma segura.
-
-### 6. Desplegar
-
-```bash
-# Con Docker (Windows/macOS):
-docker compose run --rm ansible playbooks/site.yml --ask-vault-pass
-
-# Con virtualenv (Linux):
-ansible-playbook playbooks/site.yml --ask-vault-pass
-
-# O con archivo de password (ambos):
-echo "tu_password" > .vault_pass
-chmod 600 .vault_pass
+# Con SSH key:
 docker compose run --rm ansible playbooks/site.yml
-# o: ansible-playbook playbooks/site.yml
 ```
+
+**Listo!** Los secretos se generan automaticamente y se muestran en pantalla para que los guardes.
 
 ## Estructura del Proyecto
 
@@ -182,55 +71,50 @@ docker compose run --rm ansible playbooks/site.yml
 .
 ├── Dockerfile                  # Contenedor Ansible
 ├── docker-compose.yml          # Orquestacion Docker
-├── docker-entrypoint.sh        # Script de entrada
-├── ansible.cfg                 # Configuracion de Ansible
-├── requirements.yml            # Dependencias de Galaxy
+├── ansible.cfg                 # Configuracion Ansible
+├── requirements.yml            # Dependencias Galaxy
 ├── inventory/
 │   └── production/
 │       ├── hosts.yml           # Servidores
 │       └── group_vars/
-│           ├── all.yml         # Variables globales
-│           └── all/
-│               └── vault.yml   # Secretos (encriptados)
+│           └── all.yml         # Variables configurables
 ├── playbooks/
 │   ├── site.yml                # Despliegue completo
-│   ├── setup.yml               # Solo configuracion inicial
+│   ├── setup.yml               # Solo sistema
 │   └── deploy.yml              # Solo servicios
-├── roles/
-│   ├── common/                 # Sistema base, UFW, paquetes
-│   ├── nginx/                  # Reverse proxy + SSL
-│   ├── redis/                  # Cache
-│   ├── supabase/               # Backend
-│   ├── appsmith/               # Low-code builder
-│   └── n8n/                    # Workflows
-└── files/
-    └── scripts/
-        └── generate_secrets.sh # Generador de secretos
+└── roles/
+    ├── secrets/                # Auto-generacion de secretos
+    ├── common/                 # Sistema base, UFW
+    ├── redis/                  # Cache
+    ├── supabase/               # Backend
+    ├── appsmith/               # Low-code builder
+    ├── n8n/                    # Workflows
+    └── nginx/                  # Reverse proxy + SSL
 ```
 
-## Playbooks Disponibles
-
-| Playbook | Descripcion |
-|----------|-------------|
-| `site.yml` | Despliegue completo (recomendado) |
-| `setup.yml` | Solo configuracion del sistema |
-| `deploy.yml` | Solo despliegue de servicios |
-
-## Tags Disponibles
+## Comandos Utiles
 
 ```bash
-# Por rol
-ansible-playbook playbooks/site.yml --tags common
-ansible-playbook playbooks/site.yml --tags docker
-ansible-playbook playbooks/site.yml --tags supabase
-ansible-playbook playbooks/site.yml --tags appsmith
-ansible-playbook playbooks/site.yml --tags n8n
-ansible-playbook playbooks/site.yml --tags nginx
+# Verificar conexion
+docker compose run --rm ansible all -m ping --ask-pass
 
-# Especificos
-ansible-playbook playbooks/site.yml --tags watermark  # Solo patch Appsmith
-ansible-playbook playbooks/site.yml --tags ssl        # Solo certificados
-ansible-playbook playbooks/site.yml --tags deploy     # Solo despliegue
+# Despliegue completo
+docker compose run --rm ansible playbooks/site.yml --ask-pass
+
+# Solo servicios (servidor ya configurado)
+docker compose run --rm ansible playbooks/deploy.yml --ask-pass
+
+# Dry run (sin cambios)
+docker compose run --rm ansible playbooks/site.yml --check --diff --ask-pass
+
+# Solo un servicio
+docker compose run --rm ansible playbooks/site.yml --tags supabase --ask-pass
+
+# Reaplicar patch de watermark
+docker compose run --rm ansible playbooks/site.yml --tags watermark --ask-pass
+
+# Shell interactivo
+docker compose run --rm --entrypoint bash ansible
 ```
 
 ## Configuracion
@@ -244,7 +128,7 @@ lowcode_base_path: "/opt/lowcode-stack"
 lowcode_timezone: "America/Argentina/Buenos_Aires"
 
 # Dominios
-lowcode_domain_base: "benabhi.xyz"
+lowcode_domain_base: "tudominio.com"
 lowcode_domain_supabase: "supabase.{{ lowcode_domain_base }}"
 lowcode_domain_n8n: "n8n.{{ lowcode_domain_base }}"
 lowcode_domain_appsmith: "appsmith.{{ lowcode_domain_base }}"
@@ -253,141 +137,85 @@ lowcode_domain_appsmith: "appsmith.{{ lowcode_domain_base }}"
 lowcode_supabase_version: "latest"
 lowcode_appsmith_version: "latest"
 lowcode_n8n_version: "latest"
-lowcode_redis_version: "7-alpine"
-
-# Puertos internos
-lowcode_supabase_api_port: 8000
-lowcode_supabase_studio_port: 3000
-lowcode_n8n_port: 5678
-lowcode_appsmith_port: 8081
-lowcode_redis_port: 6379
 ```
 
-### Secretos (`vault.yml`)
+## Secretos Auto-generados
 
-```yaml
-# Supabase
-vault_supabase_postgres_password: "..."
-vault_supabase_jwt_secret: "..."
-vault_supabase_anon_key: "..."
-vault_supabase_service_role_key: "..."
-vault_supabase_dashboard_password: "..."
+En el primer despliegue, Ansible genera automaticamente todos los secretos:
 
-# n8n
-vault_n8n_encryption_key: "..."
+- Contraseñas de PostgreSQL, Redis
+- JWT secrets de Supabase
+- Claves de encriptacion de n8n y Appsmith
+- Credenciales de Basic Auth para Nginx
 
-# Appsmith
-vault_appsmith_encryption_password: "..."
-vault_appsmith_encryption_salt: "..."
+Los secretos se:
+1. **Muestran en pantalla** para que los guardes
+2. **Guardan en el servidor** en `/opt/lowcode-stack/.secrets.yml`
+3. **Reutilizan** en despliegues posteriores
 
-# Redis
-vault_redis_password: "..."
+## Watermark de Appsmith
 
-# Nginx Basic Auth
-vault_nginx_htpasswd_users:
-  - username: "admin"
-    password: "..."
-```
+El rol de Appsmith incluye un patch automatico para remover la marca de agua.
 
-## Patch de Watermark de Appsmith
-
-El rol de Appsmith incluye un patch automatico para remover la marca de agua "Built on Appsmith" de la Community Edition.
-
-**Importante**: Este patch NO es persistente. Se debe reaplicar despues de:
-- Actualizar el contenedor
-- Recrear el contenedor
-- Reiniciar el contenedor
-
-Para reaplicar manualmente:
+**Importante**: El patch NO es persistente. Se debe reaplicar despues de actualizar/reiniciar el contenedor:
 
 ```bash
-ansible-playbook playbooks/site.yml --tags watermark --ask-vault-pass
-```
-
-O con el script incluido:
-
-```bash
-./roles/appsmith/files/patch_watermark.sh lowcode-appsmith
+docker compose run --rm ansible playbooks/site.yml --tags watermark --ask-pass
 ```
 
 ## SSL/HTTPS
 
-Los certificados SSL se generan automaticamente con Let's Encrypt via Certbot.
+Los certificados SSL se generan automaticamente con Let's Encrypt.
 
-- Los certificados se renuevan automaticamente (cron job diario)
-- Para testing, usar `nginx_certbot_staging: true` en `all.yml`
-- Certificados ubicados en `/etc/letsencrypt/live/`
-
-## Basic Authentication
-
-Supabase Studio esta protegido con HTTP Basic Auth por defecto.
-
-Para cambiar las credenciales, editar `vault.yml`:
-
-```yaml
-vault_nginx_htpasswd_users:
-  - username: "nuevo_usuario"
-    password: "nueva_password"
-```
-
-Para deshabilitar, en `all.yml`:
-
-```yaml
-nginx_sites:
-  - name: "supabase"
-    basic_auth: false  # Cambiar a false
-```
-
-## Comandos Utiles
-
-```bash
-# Verificar sintaxis
-ansible-playbook playbooks/site.yml --syntax-check
-
-# Dry run (sin cambios)
-ansible-playbook playbooks/site.yml --check --diff --ask-vault-pass
-
-# Verbose output
-ansible-playbook playbooks/site.yml -vvv --ask-vault-pass
-
-# Limitar a un host
-ansible-playbook playbooks/site.yml --limit lowcode-prod --ask-vault-pass
-```
+- Renovacion automatica (cron job diario)
+- Para testing: `nginx_certbot_staging: true` en `all.yml`
 
 ## Seguridad
 
-- Firewall (UFW) configurado para solo permitir SSH, HTTP y HTTPS
-- Todos los secretos encriptados con Ansible Vault
+- Firewall (UFW) - Solo SSH, HTTP, HTTPS
 - SSL/TLS 1.2+ solamente
 - HSTS habilitado
-- Headers de seguridad configurados en Nginx
+- Headers de seguridad en Nginx
 - Basic Auth para Supabase Studio
+- Secretos protegidos en el servidor (modo 600)
 
 ## Troubleshooting
 
 ### Certificados SSL no se generan
 
-1. Verificar que los dominios apuntan al servidor (DNS)
-2. Verificar que los puertos 80/443 estan abiertos
-3. Usar `nginx_certbot_staging: true` para testing
+1. Verificar DNS: `nslookup tudominio.com`
+2. Verificar puertos abiertos: 80 y 443
+3. Usar staging para testing: `nginx_certbot_staging: true`
 
 ### Appsmith watermark sigue visible
 
 1. Limpiar cache del navegador (Ctrl+Shift+F5)
-2. Verificar que el patch se aplico:
-   ```bash
-   docker exec lowcode-appsmith grep -c 'children:false&&' /opt/appsmith/editor/static/js/AppViewer.*.chunk.js
-   ```
-3. Reaplicar patch: `--tags watermark`
+2. Reaplicar patch: `--tags watermark`
 
 ### Servicios no inician
 
-1. Verificar logs de Docker:
-   ```bash
-   docker compose -f /opt/lowcode-stack/supabase/docker-compose.yml logs
-   ```
-2. Verificar espacio en disco
-3. Verificar que Docker esta corriendo: `systemctl status docker`
+```bash
+# Ver logs
+ssh root@servidor "docker logs lowcode-supabase-db"
+ssh root@servidor "docker logs lowcode-appsmith"
+ssh root@servidor "docker logs lowcode-n8n"
+```
+
+## Instalacion Alternativa (Linux nativo)
+
+```bash
+# Instalar Ansible
+sudo apt update && sudo apt install -y python3 python3-pip python3-venv
+python3 -m venv venv
+source venv/bin/activate
+pip install ansible
+
+# Instalar dependencias
+ansible-galaxy install -r requirements.yml
+
+# Desplegar
+ansible-playbook playbooks/site.yml --ask-pass
+```
 
 ## Licencia
 

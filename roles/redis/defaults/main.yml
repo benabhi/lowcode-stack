@@ -14,8 +14,8 @@ redis_version: "{{ lowcode_redis_version | default('7-alpine') }}"
 redis_container_name: "{{ lowcode_redis_container_name | default('lowcode-redis') }}"
 redis_port: "{{ lowcode_redis_port | default(6379) }}"
 
-# Redis configuration
-redis_password: "{{ vault_redis_password | default('') }}"
+# Redis configuration (from auto-generated secrets)
+redis_password: "{{ lowcode_secrets.redis_password | default('') }}"
 redis_requirepass: true
 redis_maxmemory: "256mb"
 redis_maxmemory_policy: "allkeys-lru"

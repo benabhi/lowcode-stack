@@ -33,13 +33,13 @@ supabase_jwt_expiry: 3600
 supabase_file_size_limit: 52428800  # 50MB
 supabase_storage_backend: "file"
 
-# Secrets from vault
-supabase_postgres_password: "{{ vault_supabase_postgres_password | default('') }}"
-supabase_jwt_secret: "{{ vault_supabase_jwt_secret | default('') }}"
-supabase_anon_key: "{{ vault_supabase_anon_key | default('') }}"
-supabase_service_role_key: "{{ vault_supabase_service_role_key | default('') }}"
-supabase_dashboard_username: "{{ vault_supabase_dashboard_username | default('admin') }}"
-supabase_dashboard_password: "{{ vault_supabase_dashboard_password | default('') }}"
+# Secrets (from auto-generated secrets)
+supabase_postgres_password: "{{ lowcode_secrets.supabase_postgres_password | default('') }}"
+supabase_jwt_secret: "{{ lowcode_secrets.supabase_jwt_secret | default('') }}"
+supabase_anon_key: "{{ lowcode_secrets.supabase_anon_key | default('') }}"
+supabase_service_role_key: "{{ lowcode_secrets.supabase_service_role_key | default('') }}"
+supabase_dashboard_username: "{{ lowcode_secrets.supabase_dashboard_username | default('admin') }}"
+supabase_dashboard_password: "{{ lowcode_secrets.supabase_dashboard_password | default('') }}"
 
 # URLs (derived from domain config)
 supabase_site_url: "https://{{ lowcode_domain_supabase | default('localhost') }}"
