@@ -26,3 +26,13 @@ services:
     profiles:
       - disabled
 {% endif %}
+
+  # Disable analytics stack (vector + analytics)
+  # These are optional and often cause startup issues in self-hosted environments
+  vector:
+    profiles:
+      - disabled
+
+  analytics:
+    profiles:
+      - disabled
