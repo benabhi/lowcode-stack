@@ -44,6 +44,11 @@ common_fail2ban_bantime: "1h"
 common_fail2ban_findtime: "10m"
 common_fail2ban_maxretry: 5
 
+# SSH hardening
+# Set to false if using SSH keys only (more secure)
+common_ssh_permit_root_password: true
+common_ssh_permit_password_auth: true
+
 # Swap settings
 common_swap_enabled: true
 common_swap_size: "2G"
