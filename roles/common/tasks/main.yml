@@ -1,0 +1,29 @@
+# ==============================================================================
+# Role: common - Main Tasks
+# ==============================================================================
+
+---
+- name: Include package installation tasks
+  ansible.builtin.include_tasks: packages.yml
+  tags: [common, packages]
+
+- name: Include timezone configuration
+  ansible.builtin.include_tasks: timezone.yml
+  tags: [common, timezone]
+
+- name: Include user creation tasks
+  ansible.builtin.include_tasks: users.yml
+  tags: [common, users]
+
+- name: Include security hardening tasks
+  ansible.builtin.include_tasks: security.yml
+  tags: [common, security, firewall]
+
+- name: Include swap configuration
+  ansible.builtin.include_tasks: swap.yml
+  tags: [common, swap]
+  when: common_swap_enabled | bool
+
+- name: Include kernel optimizations
+  ansible.builtin.include_tasks: sysctl.yml
+  tags: [common, sysctl]

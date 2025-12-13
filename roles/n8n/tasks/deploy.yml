@@ -1,0 +1,43 @@
+# ==============================================================================
+# Role: n8n - Deployment Tasks
+# ==============================================================================
+
+---
+- name: Ensure n8n directory exists
+  ansible.builtin.file:
+    path: "{{ n8n_install_path }}"
+    state: directory
+    owner: "{{ n8n_system_user }}"
+    group: "{{ n8n_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Create Docker network if not exists
+  community.docker.docker_network:
+    name: "{{ n8n_docker_network }}"
+    state: present
+  become: true
+
+- name: Generate n8n docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ n8n_install_path }}/docker-compose.yml"
+    owner: "{{ n8n_system_user }}"
+    group: "{{ n8n_system_group }}"
+    mode: '0644'
+  become: true
+  notify: Restart n8n
+
+- name: Pull n8n Docker image
+  community.docker.docker_image:
+    name: "{{ n8n_image }}:{{ n8n_version }}"
+    source: pull
+  become: true
+
+- name: Start n8n with docker compose
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ n8n_install_path }}"
+  become: true
+  register: n8n_compose_up
+  changed_when: "'Started' in n8n_compose_up.stdout or 'Created' in n8n_compose_up.stdout"

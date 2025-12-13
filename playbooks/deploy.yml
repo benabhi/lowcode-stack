@@ -1,0 +1,67 @@
+# ==============================================================================
+# Deploy Playbook - Services Deployment Only
+# ==============================================================================
+# This playbook deploys all services assuming the server is already configured.
+# Run setup.yml first if the server is not prepared.
+#
+# Usage:
+#   ansible-playbook playbooks/deploy.yml --ask-vault-pass
+# ==============================================================================
+
+---
+- name: Deploy Low-Code Stack Services
+  hosts: lowcode_servers
+  become: true
+
+  pre_tasks:
+    - name: Check if Docker is installed
+      ansible.builtin.command: docker --version
+      register: docker_check
+      changed_when: false
+      failed_when: docker_check.rc != 0
+
+    - name: Display deployment info
+      ansible.builtin.debug:
+        msg: |
+          =============================================
+          SERVICES DEPLOYMENT
+          =============================================
+          Target: {{ inventory_hostname }} ({{ ansible_host }})
+          Services to deploy:
+            - Redis
+            - Supabase
+            - Appsmith (with watermark patch)
+            - n8n
+            - Nginx (reverse proxy + SSL)
+          =============================================
+
+  roles:
+    - role: redis
+      tags: [redis, deploy]
+
+    - role: supabase
+      tags: [supabase, deploy]
+
+    - role: appsmith
+      tags: [appsmith, deploy]
+
+    - role: n8n
+      tags: [n8n, deploy]
+
+    - role: nginx
+      tags: [nginx, deploy]
+
+  post_tasks:
+    - name: Display deployment summary
+      ansible.builtin.debug:
+        msg: |
+          =============================================
+          SERVICES DEPLOYMENT COMPLETE!
+          =============================================
+
+          Service URLs:
+          - Supabase Studio: https://{{ lowcode_domain_supabase }}
+          - n8n:             https://{{ lowcode_domain_n8n }}
+          - Appsmith:        https://{{ lowcode_domain_appsmith }}
+
+          =============================================

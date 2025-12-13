@@ -1,0 +1,67 @@
+# ==============================================================================
+# Role: supabase - Default Variables
+# ==============================================================================
+
+---
+# Installation path
+supabase_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/supabase"
+
+# Git repository
+supabase_git_repo: "https://github.com/supabase/supabase.git"
+supabase_git_branch: "master"
+supabase_git_depth: 1
+
+# Ports
+supabase_studio_port: "{{ lowcode_supabase_studio_port | default(3000) }}"
+supabase_api_port: "{{ lowcode_supabase_api_port | default(8000) }}"
+supabase_db_port: "{{ lowcode_supabase_db_port | default(5432) }}"
+supabase_inbucket_port: 54324
+
+# Features
+supabase_enable_studio: true
+supabase_enable_inbucket: false
+
+# Database
+supabase_postgres_host: "db"
+supabase_postgres_db: "postgres"
+supabase_db_pool_size: 20
+
+# JWT settings
+supabase_jwt_expiry: 3600
+
+# Storage
+supabase_file_size_limit: 52428800  # 50MB
+supabase_storage_backend: "file"
+
+# Secrets from vault
+supabase_postgres_password: "{{ vault_supabase_postgres_password | default('') }}"
+supabase_jwt_secret: "{{ vault_supabase_jwt_secret | default('') }}"
+supabase_anon_key: "{{ vault_supabase_anon_key | default('') }}"
+supabase_service_role_key: "{{ vault_supabase_service_role_key | default('') }}"
+supabase_dashboard_username: "{{ vault_supabase_dashboard_username | default('admin') }}"
+supabase_dashboard_password: "{{ vault_supabase_dashboard_password | default('') }}"
+
+# URLs (derived from domain config)
+supabase_site_url: "https://{{ lowcode_domain_supabase | default('localhost') }}"
+supabase_api_external_url: "https://{{ lowcode_domain_supabase | default('localhost') }}"
+
+# SMTP (optional)
+supabase_smtp_host: "{{ vault_smtp_host | default('') }}"
+supabase_smtp_port: "{{ vault_smtp_port | default(587) }}"
+supabase_smtp_user: "{{ vault_smtp_user | default('') }}"
+supabase_smtp_password: "{{ vault_smtp_password | default('') }}"
+supabase_smtp_from: "{{ vault_smtp_from | default('noreply@example.com') }}"
+
+# Docker network
+supabase_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# Health check settings
+supabase_healthcheck_retries: 30
+supabase_healthcheck_delay: 10
+
+# System user
+supabase_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+supabase_system_group: "{{ lowcode_system_group | default('lowcode') }}"
+
+# Domain
+supabase_domain: "{{ lowcode_domain_supabase | default('supabase.localhost') }}"

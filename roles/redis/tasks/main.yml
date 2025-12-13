@@ -1,0 +1,12 @@
+# ==============================================================================
+# Role: redis - Main Tasks
+# ==============================================================================
+
+---
+- name: Include deployment tasks
+  ansible.builtin.include_tasks: deploy.yml
+  tags: [redis, deploy]
+
+- name: Include health check tasks
+  ansible.builtin.include_tasks: healthcheck.yml
+  tags: [redis, healthcheck]

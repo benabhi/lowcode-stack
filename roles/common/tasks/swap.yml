@@ -1,0 +1,57 @@
+# ==============================================================================
+# Role: common - Swap Configuration Tasks
+# ==============================================================================
+
+---
+- name: Check if swap file exists
+  ansible.builtin.stat:
+    path: /swapfile
+  register: swap_file_check
+  become: true
+
+- name: Create swap file
+  ansible.builtin.command:
+    cmd: fallocate -l {{ common_swap_size }} /swapfile
+    creates: /swapfile
+  become: true
+  when: not swap_file_check.stat.exists
+
+- name: Set swap file permissions
+  ansible.builtin.file:
+    path: /swapfile
+    owner: root
+    group: root
+    mode: '0600'
+  become: true
+
+- name: Format swap file
+  ansible.builtin.command:
+    cmd: mkswap /swapfile
+  become: true
+  when: not swap_file_check.stat.exists
+  register: mkswap_result
+  changed_when: mkswap_result.rc == 0
+
+- name: Enable swap file
+  ansible.builtin.command:
+    cmd: swapon /swapfile
+  become: true
+  when: not swap_file_check.stat.exists
+  register: swapon_result
+  changed_when: swapon_result.rc == 0
+
+- name: Add swap to fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^/swapfile'
+    line: '/swapfile none swap sw 0 0'
+    state: present
+  become: true
+
+- name: Set swappiness
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "{{ common_swap_swappiness }}"
+    state: present
+    reload: true
+  become: true

@@ -1,0 +1,12 @@
+# ==============================================================================
+# Role: n8n - Main Tasks
+# ==============================================================================
+
+---
+- name: Include deployment tasks
+  ansible.builtin.include_tasks: deploy.yml
+  tags: [n8n, deploy]
+
+- name: Include health check tasks
+  ansible.builtin.include_tasks: healthcheck.yml
+  tags: [n8n, healthcheck]

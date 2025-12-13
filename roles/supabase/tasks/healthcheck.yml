@@ -1,0 +1,52 @@
+# ==============================================================================
+# Role: supabase - Health Check Tasks
+# ==============================================================================
+
+---
+- name: Wait for Supabase database to be healthy
+  ansible.builtin.command:
+    cmd: docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' supabase-db
+  register: db_health
+  until: db_health.stdout == "healthy"
+  retries: "{{ supabase_healthcheck_retries }}"
+  delay: "{{ supabase_healthcheck_delay }}"
+  become: true
+  changed_when: false
+
+- name: Wait for Kong API Gateway to be ready
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ supabase_api_port }}/rest/v1/"
+    status_code: [200, 401]  # 401 is expected without auth
+  register: kong_health
+  until: kong_health.status in [200, 401]
+  retries: "{{ supabase_healthcheck_retries }}"
+  delay: "{{ supabase_healthcheck_delay }}"
+  ignore_errors: true
+
+- name: Wait for Studio to be ready
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ supabase_studio_port }}"
+    status_code: [200, 302]
+  register: studio_health
+  until: studio_health.status in [200, 302]
+  retries: "{{ supabase_healthcheck_retries }}"
+  delay: "{{ supabase_healthcheck_delay }}"
+  when: supabase_enable_studio | bool
+  ignore_errors: true
+
+- name: Get Supabase container statuses
+  ansible.builtin.command:
+    cmd: docker compose -f docker-compose.yml -f docker-compose.override.yml ps --format json
+    chdir: "{{ supabase_install_path }}"
+  register: supabase_status
+  become: true
+  changed_when: false
+
+- name: Display Supabase status
+  ansible.builtin.debug:
+    msg: |
+      Supabase deployment complete!
+      - Database: healthy
+      - API (Kong): http://127.0.0.1:{{ supabase_api_port }}
+      - Studio: http://127.0.0.1:{{ supabase_studio_port }}
+      - External URL: {{ supabase_site_url }}

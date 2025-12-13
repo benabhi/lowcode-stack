@@ -1,0 +1,236 @@
+# ==============================================================================
+# Global Variables - lowcode_stack
+# ==============================================================================
+# This file contains all configurable variables for the lowcode stack.
+# Edit this file to customize your deployment.
+# ==============================================================================
+
+---
+# ==============================================================================
+# GLOBAL CONFIGURATION
+# ==============================================================================
+lowcode_server_ip: "72.62.13.157"
+lowcode_base_path: "/opt/lowcode-stack"
+lowcode_timezone: "America/Argentina/Buenos_Aires"
+lowcode_locale: "en_US.UTF-8"
+
+# System user for services
+lowcode_system_user: "lowcode"
+lowcode_system_group: "lowcode"
+
+# ==============================================================================
+# DOMAINS - Easy to change
+# ==============================================================================
+# Base domain - all subdomains will be derived from this
+lowcode_domain_base: "benabhi.xyz"
+
+# Individual service domains (can be overridden with completely different domains)
+lowcode_domain_supabase: "supabase.{{ lowcode_domain_base }}"
+lowcode_domain_n8n: "n8n.{{ lowcode_domain_base }}"
+lowcode_domain_appsmith: "appsmith.{{ lowcode_domain_base }}"
+
+# Examples of using different domains:
+# lowcode_domain_supabase: "db.mydomain.com"
+# lowcode_domain_n8n: "automation.anotherdomain.org"
+# lowcode_domain_appsmith: "apps.example.net"
+
+# Let's Encrypt email for SSL certificates
+lowcode_letsencrypt_email: "admin@{{ lowcode_domain_base }}"
+
+# ==============================================================================
+# VERSIONS - Pin for production stability
+# ==============================================================================
+lowcode_supabase_version: "latest"       # Or specific tag: "v1.24.0"
+lowcode_appsmith_version: "latest"       # Or specific tag: "v1.93"
+lowcode_n8n_version: "latest"            # Or specific tag: "1.20.0"
+lowcode_redis_version: "7-alpine"        # Or "7.2-alpine", "6-alpine"
+
+# ==============================================================================
+# PORTS - Internal ports (Nginx proxies to these)
+# ==============================================================================
+lowcode_supabase_api_port: 8000          # Kong API Gateway
+lowcode_supabase_studio_port: 3000       # Studio UI
+lowcode_supabase_db_port: 5432           # PostgreSQL
+lowcode_n8n_port: 5678
+lowcode_appsmith_port: 8081
+lowcode_redis_port: 6379
+
+# ==============================================================================
+# DOCKER CONFIGURATION
+# ==============================================================================
+lowcode_docker_network: "lowcode-network"
+
+# Docker Compose project names
+lowcode_supabase_project: "supabase"
+lowcode_appsmith_project: "appsmith"
+lowcode_n8n_project: "n8n"
+lowcode_redis_project: "redis"
+
+# ==============================================================================
+# NGINX CONFIGURATION
+# ==============================================================================
+nginx_worker_processes: "auto"
+nginx_worker_connections: 1024
+
+# SSL/TLS settings
+nginx_ssl_protocols: "TLSv1.2 TLSv1.3"
+nginx_ssl_prefer_server_ciphers: true
+nginx_ssl_session_cache: "shared:SSL:10m"
+nginx_ssl_session_timeout: "1d"
+
+# Certbot settings
+nginx_certbot_staging: false             # Set to true for testing
+nginx_certbot_auto_renew: true
+
+# Rate limiting
+nginx_rate_limit_enabled: true
+nginx_rate_limit_zone: "zone=api:10m rate=10r/s"
+
+# Security headers
+nginx_security_headers:
+  X-Frame-Options: "SAMEORIGIN"
+  X-Content-Type-Options: "nosniff"
+  X-XSS-Protection: "1; mode=block"
+  Referrer-Policy: "strict-origin-when-cross-origin"
+
+# Basic auth - enable/disable per service
+lowcode_basic_auth_enabled: true
+
+# Sites configuration
+nginx_sites:
+  - name: "supabase"
+    domain: "{{ lowcode_domain_supabase }}"
+    upstream_host: "127.0.0.1"
+    upstream_port: "{{ lowcode_supabase_api_port }}"
+    basic_auth: true                     # Enable/disable basic auth
+    basic_auth_realm: "Supabase Studio"
+    websocket: true                      # Enable WebSocket support
+    max_body_size: "50M"
+
+  - name: "n8n"
+    domain: "{{ lowcode_domain_n8n }}"
+    upstream_host: "127.0.0.1"
+    upstream_port: "{{ lowcode_n8n_port }}"
+    basic_auth: false                    # n8n has its own auth
+    websocket: true
+    max_body_size: "50M"
+
+  - name: "appsmith"
+    domain: "{{ lowcode_domain_appsmith }}"
+    upstream_host: "127.0.0.1"
+    upstream_port: "{{ lowcode_appsmith_port }}"
+    basic_auth: false                    # Appsmith has its own auth
+    websocket: true
+    max_body_size: "150M"                # Allow large uploads
+
+# ==============================================================================
+# SUPABASE CONFIGURATION
+# ==============================================================================
+supabase_git_repo: "https://github.com/supabase/supabase.git"
+supabase_git_branch: "master"
+supabase_git_depth: 1
+
+supabase_enable_studio: true
+supabase_enable_inbucket: false          # Fake email server for dev
+
+# Database settings
+supabase_db_pool_size: 20
+supabase_file_size_limit: 52428800       # 50MB
+supabase_jwt_expiry: 3600                # 1 hour
+
+# Health check settings
+supabase_healthcheck_retries: 30
+supabase_healthcheck_delay: 10
+
+# ==============================================================================
+# APPSMITH CONFIGURATION
+# ==============================================================================
+appsmith_container_name: "lowcode-appsmith"
+appsmith_disable_telemetry: true
+appsmith_disable_intercom: true
+
+# Watermark patch
+appsmith_patch_watermark: true
+appsmith_watermark_pattern: "children:!W&&"
+appsmith_watermark_replacement: "children:false&&"
+appsmith_chunk_path: "/opt/appsmith/editor/static/js"
+
+# Health check settings
+appsmith_healthcheck_retries: 24         # 2 minutes with 5s delay
+appsmith_healthcheck_delay: 5
+
+# ==============================================================================
+# N8N CONFIGURATION
+# ==============================================================================
+n8n_container_name: "lowcode-n8n"
+
+# Database type
+n8n_db_type: "sqlite"                    # Or "postgresdb" for PostgreSQL
+n8n_db_sqlite_path: "/home/node/.n8n/database.sqlite"
+
+# Execution settings
+n8n_executions_mode: "regular"
+n8n_executions_data_save_on_error: "all"
+n8n_executions_data_save_on_success: "all"
+n8n_executions_data_save_manual: true
+
+# Redis for queue (optional)
+n8n_redis_enabled: true
+
+# SMTP (optional)
+n8n_smtp_enabled: false
+
+# Health check settings
+n8n_healthcheck_retries: 12
+n8n_healthcheck_delay: 10
+
+# ==============================================================================
+# REDIS CONFIGURATION
+# ==============================================================================
+redis_container_name: "lowcode-redis"
+redis_maxmemory: "256mb"
+redis_maxmemory_policy: "allkeys-lru"
+redis_appendonly: "yes"
+
+# Health check settings
+redis_healthcheck_retries: 10
+redis_healthcheck_delay: 5
+
+# ==============================================================================
+# COMMON ROLE CONFIGURATION
+# ==============================================================================
+# System packages to install
+common_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - software-properties-common
+  - git
+  - htop
+  - vim
+  - unzip
+  - jq
+  - python3-pip
+  - python3-docker
+  - apache2-utils         # For htpasswd
+  - ufw
+
+# System upgrade
+common_upgrade_packages: true
+common_reboot_if_required: false
+
+# Firewall (UFW)
+common_firewall_enabled: true
+common_firewall_allowed_ports:
+  - { port: 22, proto: tcp }     # SSH
+  - { port: 80, proto: tcp }     # HTTP
+  - { port: 443, proto: tcp }    # HTTPS
+
+# Fail2ban
+common_fail2ban_enabled: true
+
+# Swap
+common_swap_enabled: true
+common_swap_size: "2G"

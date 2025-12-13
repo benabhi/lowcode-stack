@@ -1,0 +1,24 @@
+# ==============================================================================
+# Role: n8n - Metadata
+# ==============================================================================
+
+---
+galaxy_info:
+  author: lowcode-stack
+  description: n8n workflow automation deployment for lowcode-stack
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+  galaxy_tags:
+    - n8n
+    - automation
+    - workflow
+    - docker
+
+dependencies:
+  - role: common
+  - role: geerlingguy.docker
+  - role: redis

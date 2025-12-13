@@ -1,0 +1,68 @@
+# ==============================================================================
+# Role: n8n - Default Variables
+# ==============================================================================
+
+---
+# Installation path
+n8n_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/n8n"
+
+# Docker image
+n8n_image: "n8nio/n8n"
+n8n_version: "{{ lowcode_n8n_version | default('latest') }}"
+
+# Container settings
+n8n_container_name: "{{ lowcode_n8n_container_name | default('lowcode-n8n') }}"
+n8n_port: "{{ lowcode_n8n_port | default(5678) }}"
+
+# Database configuration
+n8n_db_type: "sqlite"
+n8n_db_sqlite_path: "/home/node/.n8n/database.sqlite"
+
+# PostgreSQL (if using instead of SQLite)
+n8n_db_postgres_host: "{{ lowcode_server_ip | default('127.0.0.1') }}"
+n8n_db_postgres_port: "{{ lowcode_supabase_db_port | default(5432) }}"
+n8n_db_postgres_database: "n8n"
+n8n_db_postgres_user: "postgres"
+n8n_db_postgres_password: "{{ vault_supabase_postgres_password | default('') }}"
+
+# Encryption key from vault
+n8n_encryption_key: "{{ vault_n8n_encryption_key | default('') }}"
+
+# URL configuration
+n8n_protocol: "https"
+n8n_host: "{{ lowcode_domain_n8n | default('n8n.localhost') }}"
+n8n_webhook_url: "https://{{ lowcode_domain_n8n | default('n8n.localhost') }}/"
+
+# Timezone
+n8n_timezone: "{{ lowcode_timezone | default('America/Argentina/Buenos_Aires') }}"
+
+# Execution settings
+n8n_executions_mode: "regular"
+n8n_executions_data_save_on_error: "all"
+n8n_executions_data_save_on_success: "all"
+n8n_executions_data_save_manual: true
+
+# Redis configuration (for queue mode)
+n8n_redis_enabled: true
+n8n_redis_host: "{{ lowcode_redis_container_name | default('lowcode-redis') }}"
+n8n_redis_port: 6379
+n8n_redis_password: "{{ vault_redis_password | default('') }}"
+
+# SMTP configuration (optional)
+n8n_smtp_enabled: false
+n8n_smtp_host: "{{ vault_smtp_host | default('') }}"
+n8n_smtp_port: "{{ vault_smtp_port | default(587) }}"
+n8n_smtp_user: "{{ vault_smtp_user | default('') }}"
+n8n_smtp_password: "{{ vault_smtp_password | default('') }}"
+n8n_smtp_sender: "{{ vault_smtp_from | default('') }}"
+
+# Docker network
+n8n_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# Health check settings
+n8n_healthcheck_retries: 12
+n8n_healthcheck_delay: 10
+
+# System user
+n8n_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+n8n_system_group: "{{ lowcode_system_group | default('lowcode') }}"

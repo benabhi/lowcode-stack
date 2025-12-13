@@ -1,0 +1,25 @@
+# ==============================================================================
+# Role: appsmith - Handlers
+# ==============================================================================
+
+---
+- name: Restart appsmith
+  ansible.builtin.command:
+    cmd: docker compose restart
+    chdir: "{{ appsmith_install_path }}"
+  become: true
+
+- name: Stop appsmith
+  ansible.builtin.command:
+    cmd: docker compose down
+    chdir: "{{ appsmith_install_path }}"
+  become: true
+
+- name: Update appsmith
+  ansible.builtin.shell:
+    cmd: docker compose pull && docker compose up -d
+    chdir: "{{ appsmith_install_path }}"
+  become: true
+
+- name: Reapply watermark patch
+  ansible.builtin.include_tasks: patch_watermark.yml

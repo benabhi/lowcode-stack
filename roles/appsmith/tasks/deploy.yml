@@ -1,0 +1,43 @@
+# ==============================================================================
+# Role: appsmith - Deployment Tasks
+# ==============================================================================
+
+---
+- name: Ensure Appsmith directory exists
+  ansible.builtin.file:
+    path: "{{ appsmith_install_path }}"
+    state: directory
+    owner: "{{ appsmith_system_user }}"
+    group: "{{ appsmith_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Create Docker network if not exists
+  community.docker.docker_network:
+    name: "{{ appsmith_docker_network }}"
+    state: present
+  become: true
+
+- name: Generate Appsmith docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ appsmith_install_path }}/docker-compose.yml"
+    owner: "{{ appsmith_system_user }}"
+    group: "{{ appsmith_system_group }}"
+    mode: '0644'
+  become: true
+  notify: Restart appsmith
+
+- name: Pull Appsmith Docker image
+  community.docker.docker_image:
+    name: "{{ appsmith_image }}:{{ appsmith_version }}"
+    source: pull
+  become: true
+
+- name: Start Appsmith with docker compose
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ appsmith_install_path }}"
+  become: true
+  register: appsmith_compose_up
+  changed_when: "'Started' in appsmith_compose_up.stdout or 'Created' in appsmith_compose_up.stdout"

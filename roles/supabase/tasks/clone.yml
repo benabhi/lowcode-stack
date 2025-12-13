@@ -1,0 +1,48 @@
+# ==============================================================================
+# Role: supabase - Git Clone Tasks
+# ==============================================================================
+
+---
+- name: Ensure Supabase directory exists
+  ansible.builtin.file:
+    path: "{{ supabase_install_path }}"
+    state: directory
+    owner: "{{ supabase_system_user }}"
+    group: "{{ supabase_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Create temporary directory for git clone
+  ansible.builtin.file:
+    path: "{{ supabase_install_path }}/repo"
+    state: directory
+    owner: "{{ supabase_system_user }}"
+    group: "{{ supabase_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Clone Supabase repository
+  ansible.builtin.git:
+    repo: "{{ supabase_git_repo }}"
+    dest: "{{ supabase_install_path }}/repo"
+    version: "{{ supabase_git_branch }}"
+    depth: "{{ supabase_git_depth }}"
+    force: true
+  become: true
+  become_user: "{{ supabase_system_user }}"
+
+- name: Copy docker folder to working directory
+  ansible.builtin.copy:
+    src: "{{ supabase_install_path }}/repo/docker/"
+    dest: "{{ supabase_install_path }}/"
+    owner: "{{ supabase_system_user }}"
+    group: "{{ supabase_system_group }}"
+    mode: preserve
+    remote_src: true
+  become: true
+
+- name: Remove temporary repo directory
+  ansible.builtin.file:
+    path: "{{ supabase_install_path }}/repo"
+    state: absent
+  become: true

@@ -1,0 +1,27 @@
+# ==============================================================================
+# Role: common - Kernel Optimization Tasks (sysctl)
+# ==============================================================================
+
+---
+- name: Apply sysctl optimizations
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+    sysctl_file: /etc/sysctl.d/99-lowcode-stack.conf
+  become: true
+  loop: "{{ common_sysctl_settings | dict2items }}"
+
+- name: Increase file descriptor limits
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  become: true
+  loop:
+    - { regexp: '^\*\s+soft\s+nofile', line: '* soft nofile 65535' }
+    - { regexp: '^\*\s+hard\s+nofile', line: '* hard nofile 65535' }
+    - { regexp: '^root\s+soft\s+nofile', line: 'root soft nofile 65535' }
+    - { regexp: '^root\s+hard\s+nofile', line: 'root hard nofile 65535' }

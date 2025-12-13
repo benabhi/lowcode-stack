@@ -1,0 +1,112 @@
+# ==============================================================================
+# Main Playbook - Deploy Complete Low-Code Stack
+# ==============================================================================
+# This playbook deploys the entire lowcode-stack to Ubuntu 24.04 LTS servers.
+#
+# Usage:
+#   ansible-playbook playbooks/site.yml --ask-vault-pass
+#   ansible-playbook playbooks/site.yml --vault-password-file .vault_pass
+#
+# Tags:
+#   --tags common,docker     # Only system setup
+#   --tags supabase          # Only Supabase
+#   --tags appsmith          # Only Appsmith
+#   --tags n8n               # Only n8n
+#   --tags nginx             # Only Nginx
+#   --tags watermark         # Only apply Appsmith watermark patch
+# ==============================================================================
+
+---
+- name: Deploy Low-Code Stack
+  hosts: lowcode_servers
+  become: true
+
+  pre_tasks:
+    - name: Verify Ansible version
+      ansible.builtin.assert:
+        that:
+          - ansible_version.full is version('2.14', '>=')
+        fail_msg: "Ansible 2.14 or higher is required"
+      tags: always
+
+    - name: Verify target is Ubuntu 24.04
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == 'Ubuntu'
+          - ansible_distribution_version == '24.04'
+        fail_msg: "This playbook requires Ubuntu 24.04 LTS"
+      tags: always
+
+    - name: Display deployment info
+      ansible.builtin.debug:
+        msg: |
+          =============================================
+          LOW-CODE STACK DEPLOYMENT
+          =============================================
+          Target: {{ inventory_hostname }} ({{ ansible_host }})
+          Base Path: {{ lowcode_base_path }}
+          Domains:
+            - Supabase: {{ lowcode_domain_supabase }}
+            - n8n: {{ lowcode_domain_n8n }}
+            - Appsmith: {{ lowcode_domain_appsmith }}
+          =============================================
+      tags: always
+
+  roles:
+    # Phase 1: System configuration
+    - role: common
+      tags: [common, setup]
+
+    # Phase 2: Docker installation
+    - role: geerlingguy.docker
+      tags: [docker, setup]
+      vars:
+        docker_install_compose_plugin: true
+        docker_users:
+          - "{{ lowcode_system_user }}"
+
+    # Phase 3: Redis (dependency for n8n)
+    - role: redis
+      tags: [redis, deploy]
+
+    # Phase 4: Supabase
+    - role: supabase
+      tags: [supabase, deploy]
+
+    # Phase 5: Appsmith
+    - role: appsmith
+      tags: [appsmith, deploy]
+
+    # Phase 6: n8n
+    - role: n8n
+      tags: [n8n, deploy]
+
+    # Phase 7: Nginx reverse proxy (last, after all services are up)
+    - role: nginx
+      tags: [nginx, deploy]
+
+  post_tasks:
+    - name: Display deployment summary
+      ansible.builtin.debug:
+        msg: |
+          =============================================
+          LOW-CODE STACK DEPLOYMENT COMPLETE!
+          =============================================
+
+          Service URLs:
+          - Supabase Studio: https://{{ lowcode_domain_supabase }}
+          - n8n:             https://{{ lowcode_domain_n8n }}
+          - Appsmith:        https://{{ lowcode_domain_appsmith }}
+
+          Server: {{ ansible_host }}
+
+          IMPORTANT:
+          - Clear browser cache if you see certificate warnings
+          - Appsmith watermark patch applied (not persistent across restarts)
+          - Supabase Studio protected with Basic Auth
+
+          To reapply Appsmith watermark patch:
+            ansible-playbook playbooks/site.yml --tags watermark --ask-vault-pass
+
+          =============================================
+      tags: always

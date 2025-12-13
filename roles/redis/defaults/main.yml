@@ -1,0 +1,34 @@
+# ==============================================================================
+# Role: redis - Default Variables
+# ==============================================================================
+
+---
+# Installation path
+redis_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/redis"
+
+# Docker image
+redis_image: "redis"
+redis_version: "{{ lowcode_redis_version | default('7-alpine') }}"
+
+# Container settings
+redis_container_name: "{{ lowcode_redis_container_name | default('lowcode-redis') }}"
+redis_port: "{{ lowcode_redis_port | default(6379) }}"
+
+# Redis configuration
+redis_password: "{{ vault_redis_password | default('') }}"
+redis_requirepass: true
+redis_maxmemory: "256mb"
+redis_maxmemory_policy: "allkeys-lru"
+redis_appendonly: "yes"
+redis_appendfsync: "everysec"
+
+# Docker network
+redis_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# Health check settings
+redis_healthcheck_retries: 10
+redis_healthcheck_delay: 5
+
+# System user
+redis_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+redis_system_group: "{{ lowcode_system_group | default('lowcode') }}"

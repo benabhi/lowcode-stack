@@ -1,0 +1,21 @@
+# ==============================================================================
+# Role: nginx - Handlers
+# ==============================================================================
+
+---
+- name: Reload nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+  become: true
+
+- name: Restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+  become: true
+
+- name: Test nginx configuration
+  ansible.builtin.command: nginx -t
+  become: true
+  changed_when: false

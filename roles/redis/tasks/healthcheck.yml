@@ -1,0 +1,28 @@
+# ==============================================================================
+# Role: redis - Health Check Tasks
+# ==============================================================================
+
+---
+- name: Wait for Redis container to be running
+  community.docker.docker_container_info:
+    name: "{{ redis_container_name }}"
+  register: redis_container_info
+  until: redis_container_info.container.State.Running | default(false)
+  retries: "{{ redis_healthcheck_retries }}"
+  delay: "{{ redis_healthcheck_delay }}"
+  become: true
+
+- name: Wait for Redis to be healthy
+  ansible.builtin.command:
+    cmd: docker exec {{ redis_container_name }} redis-cli {% if redis_password %}-a {{ redis_password }}{% endif %} ping
+  register: redis_ping
+  until: redis_ping.stdout == "PONG"
+  retries: "{{ redis_healthcheck_retries }}"
+  delay: "{{ redis_healthcheck_delay }}"
+  become: true
+  changed_when: false
+  no_log: true  # Hide password from logs
+
+- name: Display Redis status
+  ansible.builtin.debug:
+    msg: "Redis is running and healthy on port {{ redis_port }}"

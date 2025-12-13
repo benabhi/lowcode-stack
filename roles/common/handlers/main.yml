@@ -1,0 +1,27 @@
+# ==============================================================================
+# Role: common - Handlers
+# ==============================================================================
+
+---
+- name: Restart sshd
+  ansible.builtin.service:
+    name: sshd
+    state: restarted
+  become: true
+
+- name: Restart fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted
+  become: true
+
+- name: Restart cron
+  ansible.builtin.service:
+    name: cron
+    state: restarted
+  become: true
+
+- name: Reload sysctl
+  ansible.builtin.command: sysctl -p
+  become: true
+  changed_when: true

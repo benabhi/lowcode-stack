@@ -1,0 +1,25 @@
+# ==============================================================================
+# Role: common - Timezone Configuration Tasks
+# ==============================================================================
+
+---
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ common_timezone }}"
+  become: true
+  notify: Restart cron
+
+- name: Generate locale
+  community.general.locale_gen:
+    name: "{{ common_locale }}"
+    state: present
+  become: true
+
+- name: Set default locale
+  ansible.builtin.lineinfile:
+    path: /etc/default/locale
+    regexp: '^LANG='
+    line: 'LANG={{ common_locale }}'
+    create: true
+    mode: '0644'
+  become: true

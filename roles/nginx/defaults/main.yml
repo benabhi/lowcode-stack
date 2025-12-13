@@ -1,0 +1,58 @@
+# ==============================================================================
+# Role: nginx - Default Variables
+# ==============================================================================
+
+---
+# Nginx user
+nginx_user: "www-data"
+nginx_worker_processes: "auto"
+nginx_worker_connections: 1024
+
+# SSL/TLS configuration
+nginx_ssl_protocols: "TLSv1.2 TLSv1.3"
+nginx_ssl_ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"
+nginx_ssl_prefer_server_ciphers: true
+nginx_ssl_session_cache: "shared:SSL:10m"
+nginx_ssl_session_timeout: "1d"
+
+# Certbot/Let's Encrypt
+nginx_certbot_email: "{{ lowcode_letsencrypt_email | default('admin@example.com') }}"
+nginx_certbot_staging: false
+nginx_certbot_auto_renew: true
+nginx_ssl_cert_path: "/etc/letsencrypt/live"
+
+# Rate limiting
+nginx_rate_limit_enabled: true
+nginx_rate_limit_zone: "zone=api:10m rate=10r/s"
+nginx_rate_limit_burst: 20
+
+# Security headers
+nginx_security_headers:
+  X-Frame-Options: "SAMEORIGIN"
+  X-Content-Type-Options: "nosniff"
+  X-XSS-Protection: "1; mode=block"
+  Referrer-Policy: "strict-origin-when-cross-origin"
+
+# Basic auth
+nginx_basic_auth_enabled: "{{ lowcode_basic_auth_enabled | default(true) }}"
+nginx_htpasswd_users: "{{ vault_nginx_htpasswd_users | default([]) }}"
+
+# Sites configuration (from all.yml)
+nginx_sites: "{{ nginx_sites | default([]) }}"
+
+# Domains
+nginx_domain_supabase: "{{ lowcode_domain_supabase | default('supabase.localhost') }}"
+nginx_domain_n8n: "{{ lowcode_domain_n8n | default('n8n.localhost') }}"
+nginx_domain_appsmith: "{{ lowcode_domain_appsmith | default('appsmith.localhost') }}"
+
+# Ports
+nginx_supabase_port: "{{ lowcode_supabase_api_port | default(8000) }}"
+nginx_n8n_port: "{{ lowcode_n8n_port | default(5678) }}"
+nginx_appsmith_port: "{{ lowcode_appsmith_port | default(8081) }}"
+
+# Webroot for Let's Encrypt challenges
+nginx_webroot_path: "/var/www/certbot"
+
+# Log paths
+nginx_access_log: "/var/log/nginx/access.log"
+nginx_error_log: "/var/log/nginx/error.log"

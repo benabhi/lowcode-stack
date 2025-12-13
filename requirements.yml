@@ -1,0 +1,32 @@
+# ==============================================================================
+# Ansible Galaxy Requirements - lowcode_stack
+# ==============================================================================
+# Install with: ansible-galaxy install -r requirements.yml
+# ==============================================================================
+
+---
+roles:
+  # Docker CE installation
+  - name: geerlingguy.docker
+    version: "7.4.1"
+
+  # Certbot/Let's Encrypt
+  - name: geerlingguy.certbot
+    version: "5.2.0"
+
+  # Pip (for Python packages needed by Ansible modules)
+  - name: geerlingguy.pip
+    version: "3.1.0"
+
+collections:
+  # Docker modules for Ansible
+  - name: community.docker
+    version: ">=3.4.0"
+
+  # POSIX modules (for authorized_key, sysctl, etc.)
+  - name: ansible.posix
+    version: ">=1.5.0"
+
+  # General community modules
+  - name: community.general
+    version: ">=8.0.0"

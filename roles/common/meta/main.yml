@@ -1,0 +1,21 @@
+# ==============================================================================
+# Role: common - Metadata
+# ==============================================================================
+
+---
+galaxy_info:
+  author: lowcode-stack
+  description: Common system configuration for lowcode-stack
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble  # 24.04 LTS
+  galaxy_tags:
+    - system
+    - common
+    - security
+    - firewall
+
+dependencies: []

@@ -1,0 +1,53 @@
+# ==============================================================================
+# Role: common - User Creation Tasks
+# ==============================================================================
+
+---
+- name: Create system group for services
+  ansible.builtin.group:
+    name: "{{ common_system_group }}"
+    system: true
+    state: present
+  become: true
+
+- name: Create system user for services
+  ansible.builtin.user:
+    name: "{{ common_system_user }}"
+    group: "{{ common_system_group }}"
+    system: true
+    shell: /bin/bash
+    home: "{{ common_base_path }}"
+    createhome: true
+    state: present
+  become: true
+
+- name: Add system user to docker group
+  ansible.builtin.user:
+    name: "{{ common_system_user }}"
+    groups: docker
+    append: true
+  become: true
+  ignore_errors: true  # Docker may not be installed yet
+
+- name: Create base directory for services
+  ansible.builtin.file:
+    path: "{{ common_base_path }}"
+    state: directory
+    owner: "{{ common_system_user }}"
+    group: "{{ common_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Create subdirectories for each service
+  ansible.builtin.file:
+    path: "{{ common_base_path }}/{{ item }}"
+    state: directory
+    owner: "{{ common_system_user }}"
+    group: "{{ common_system_group }}"
+    mode: '0755'
+  become: true
+  loop:
+    - supabase
+    - appsmith
+    - n8n
+    - redis

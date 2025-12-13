@@ -1,0 +1,51 @@
+# ==============================================================================
+# Role: nginx - Installation Tasks
+# ==============================================================================
+
+---
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install Certbot and Nginx plugin
+  ansible.builtin.apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+  become: true
+
+- name: Create Nginx snippets directory
+  ansible.builtin.file:
+    path: /etc/nginx/snippets
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Create webroot directory for Let's Encrypt
+  ansible.builtin.file:
+    path: "{{ nginx_webroot_path }}"
+    state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: '0755'
+  become: true
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  become: true
+  notify: Reload nginx
+
+- name: Enable and start Nginx service
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+    state: started
+  become: true

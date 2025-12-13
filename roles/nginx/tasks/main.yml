@@ -1,0 +1,21 @@
+# ==============================================================================
+# Role: nginx - Main Tasks
+# ==============================================================================
+
+---
+- name: Include nginx installation tasks
+  ansible.builtin.include_tasks: install.yml
+  tags: [nginx, install]
+
+- name: Include htpasswd configuration tasks
+  ansible.builtin.include_tasks: htpasswd.yml
+  tags: [nginx, htpasswd]
+  when: nginx_basic_auth_enabled | bool
+
+- name: Include SSL/Certbot configuration tasks
+  ansible.builtin.include_tasks: ssl.yml
+  tags: [nginx, ssl, certbot]
+
+- name: Include site configuration tasks
+  ansible.builtin.include_tasks: configure.yml
+  tags: [nginx, configure]

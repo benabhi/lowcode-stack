@@ -1,0 +1,22 @@
+# ==============================================================================
+# Role: supabase - Handlers
+# ==============================================================================
+
+---
+- name: Restart supabase
+  ansible.builtin.command:
+    cmd: docker compose -f docker-compose.yml -f docker-compose.override.yml restart
+    chdir: "{{ supabase_install_path }}"
+  become: true
+
+- name: Stop supabase
+  ansible.builtin.command:
+    cmd: docker compose -f docker-compose.yml -f docker-compose.override.yml down
+    chdir: "{{ supabase_install_path }}"
+  become: true
+
+- name: Update supabase
+  ansible.builtin.shell:
+    cmd: docker compose -f docker-compose.yml -f docker-compose.override.yml pull && docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+    chdir: "{{ supabase_install_path }}"
+  become: true

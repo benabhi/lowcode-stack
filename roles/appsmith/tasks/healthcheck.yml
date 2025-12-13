@@ -1,0 +1,31 @@
+# ==============================================================================
+# Role: appsmith - Health Check Tasks
+# ==============================================================================
+
+---
+- name: Wait for Appsmith container to be running
+  community.docker.docker_container_info:
+    name: "{{ appsmith_container_name }}"
+  register: appsmith_container_info
+  until: appsmith_container_info.container.State.Running | default(false)
+  retries: "{{ appsmith_healthcheck_retries }}"
+  delay: "{{ appsmith_healthcheck_delay }}"
+  become: true
+
+- name: Wait for Appsmith container to be healthy
+  ansible.builtin.command:
+    cmd: docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' {{ appsmith_container_name }}
+  register: appsmith_health
+  until: appsmith_health.stdout == "healthy"
+  retries: "{{ appsmith_healthcheck_retries }}"
+  delay: "{{ appsmith_healthcheck_delay }}"
+  become: true
+  changed_when: false
+
+- name: Display Appsmith status
+  ansible.builtin.debug:
+    msg: |
+      Appsmith is running and healthy!
+      - Container: {{ appsmith_container_name }}
+      - Internal URL: http://127.0.0.1:{{ appsmith_port }}
+      - External URL: https://{{ appsmith_domain }}

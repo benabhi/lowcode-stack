@@ -1,0 +1,75 @@
+# ==============================================================================
+# Secrets - Ansible Vault Encrypted
+# ==============================================================================
+# IMPORTANT: This file should be encrypted with Ansible Vault!
+#
+# To encrypt:   ansible-vault encrypt vault.yml
+# To edit:      ansible-vault edit vault.yml
+# To view:      ansible-vault view vault.yml
+# To decrypt:   ansible-vault decrypt vault.yml
+#
+# Generate secure passwords using the included script:
+#   ./files/scripts/generate_secrets.sh > secrets.txt
+#
+# Or generate JWT keys at:
+#   https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys
+# ==============================================================================
+
+---
+# ==============================================================================
+# SUPABASE SECRETS
+# ==============================================================================
+# PostgreSQL password (generate with: openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
+vault_supabase_postgres_password: "CHANGE_ME_GENERATE_32_CHARS_PASSWORD"
+
+# JWT Secret (generate with: openssl rand -base64 32)
+vault_supabase_jwt_secret: "CHANGE_ME_GENERATE_JWT_SECRET_BASE64"
+
+# API Keys - Generate at https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys
+# These are JWT tokens signed with your JWT secret
+vault_supabase_anon_key: "CHANGE_ME_GENERATE_ANON_KEY_JWT"
+vault_supabase_service_role_key: "CHANGE_ME_GENERATE_SERVICE_ROLE_KEY_JWT"
+
+# Dashboard credentials
+vault_supabase_dashboard_username: "admin"
+vault_supabase_dashboard_password: "CHANGE_ME_SECURE_PASSWORD"
+
+# ==============================================================================
+# N8N SECRETS
+# ==============================================================================
+# Encryption key for credentials (generate with: openssl rand -hex 16)
+vault_n8n_encryption_key: "CHANGE_ME_GENERATE_32_CHARS_HEX"
+
+# Basic auth (if using external auth instead of n8n's built-in)
+vault_n8n_basic_auth_user: "admin"
+vault_n8n_basic_auth_password: "CHANGE_ME_SECURE_PASSWORD"
+
+# ==============================================================================
+# APPSMITH SECRETS
+# ==============================================================================
+# Encryption password and salt (generate with: openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
+vault_appsmith_encryption_password: "CHANGE_ME_GENERATE_32_CHARS"
+vault_appsmith_encryption_salt: "CHANGE_ME_GENERATE_32_CHARS"
+
+# ==============================================================================
+# REDIS SECRETS
+# ==============================================================================
+# Redis password (generate with: openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
+vault_redis_password: "CHANGE_ME_GENERATE_32_CHARS"
+
+# ==============================================================================
+# NGINX BASIC AUTH
+# ==============================================================================
+# Users for HTTP Basic Authentication (htpasswd format)
+vault_nginx_htpasswd_users:
+  - username: "admin"
+    password: "CHANGE_ME_SECURE_PASSWORD"
+
+# ==============================================================================
+# SMTP (Optional)
+# ==============================================================================
+vault_smtp_host: "smtp.example.com"
+vault_smtp_port: 587
+vault_smtp_user: "noreply@example.com"
+vault_smtp_password: "CHANGE_ME_SMTP_PASSWORD"
+vault_smtp_from: "noreply@example.com"

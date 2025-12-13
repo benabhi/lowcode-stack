@@ -1,0 +1,110 @@
+# ==============================================================================
+# Role: nginx - SSL/Let's Encrypt Tasks
+# ==============================================================================
+
+---
+- name: Generate Diffie-Hellman parameters (this may take a while)
+  ansible.builtin.command:
+    cmd: openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+    creates: /etc/ssl/certs/dhparam.pem
+  become: true
+
+- name: Deploy SSL parameters snippet
+  ansible.builtin.template:
+    src: ssl-params.conf.j2
+    dest: /etc/nginx/snippets/ssl-params.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  notify: Reload nginx
+
+- name: Create initial HTTP-only configs for certificate generation
+  ansible.builtin.template:
+    src: site-initial.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  loop: "{{ nginx_sites }}"
+  notify: Reload nginx
+
+- name: Enable initial sites
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item.name }}"
+    dest: "/etc/nginx/sites-enabled/{{ item.name }}"
+    state: link
+  become: true
+  loop: "{{ nginx_sites }}"
+  notify: Reload nginx
+
+- name: Force Nginx reload before certificate generation
+  ansible.builtin.meta: flush_handlers
+
+- name: Check if certificates already exist
+  ansible.builtin.stat:
+    path: "{{ nginx_ssl_cert_path }}/{{ item.domain }}/fullchain.pem"
+  register: cert_exists
+  loop: "{{ nginx_sites }}"
+
+- name: Generate SSL certificates with Certbot
+  ansible.builtin.command: >
+    certbot certonly
+    --webroot
+    --webroot-path={{ nginx_webroot_path }}
+    --email {{ nginx_certbot_email }}
+    --agree-tos
+    --no-eff-email
+    {% if nginx_certbot_staging | bool %}--staging{% endif %}
+    -d {{ item.item.domain }}
+  become: true
+  loop: "{{ cert_exists.results }}"
+  when: not item.stat.exists
+  register: certbot_result
+  changed_when: certbot_result.rc == 0
+
+- name: Setup certbot auto-renewal with systemd timer
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/certbot-renewal.timer
+    content: |
+      [Unit]
+      Description=Certbot Renewal Timer
+
+      [Timer]
+      OnCalendar=*-*-* 03:30:00
+      RandomizedDelaySec=1800
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  when: nginx_certbot_auto_renew | bool
+
+- name: Setup certbot renewal service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/certbot-renewal.service
+    content: |
+      [Unit]
+      Description=Certbot Renewal Service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl reload nginx"
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  when: nginx_certbot_auto_renew | bool
+
+- name: Enable certbot renewal timer
+  ansible.builtin.systemd:
+    name: certbot-renewal.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  become: true
+  when: nginx_certbot_auto_renew | bool

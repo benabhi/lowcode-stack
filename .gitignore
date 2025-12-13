@@ -1,14 +1,59 @@
-# Generated folders
-supabase-repo/
-supabase/
-!supabase/docker-compose.override.yml
+# ==============================================================================
+# Git Ignore - lowcode_stack Ansible
+# ==============================================================================
 
-# Environment files with secrets
-supabase/.env
+# Ansible vault password files
+.vault_pass
+*.vault_pass
+vault_password
 
-# Docker volumes
-volumes/
+# Temporary files
+*.retry
+*.log
+*.tmp
+*.bak
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
+# Molecule testing
+molecule/**/molecule.yml.bak
+
+# Collections downloaded locally
+collections/
+
+# Generated secrets (never commit these!)
+secrets.txt
+secrets.yml
+*.secrets
+
+# SSH keys
+*.pem
+*.key
+id_rsa
+id_rsa.pub

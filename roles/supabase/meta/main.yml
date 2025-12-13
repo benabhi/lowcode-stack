@@ -1,0 +1,24 @@
+# ==============================================================================
+# Role: supabase - Metadata
+# ==============================================================================
+
+---
+galaxy_info:
+  author: lowcode-stack
+  description: Supabase deployment for lowcode-stack
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+  galaxy_tags:
+    - supabase
+    - database
+    - postgresql
+    - docker
+    - backend
+
+dependencies:
+  - role: common
+  - role: geerlingguy.docker

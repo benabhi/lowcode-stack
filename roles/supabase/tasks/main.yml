@@ -1,0 +1,20 @@
+# ==============================================================================
+# Role: supabase - Main Tasks
+# ==============================================================================
+
+---
+- name: Include git clone tasks
+  ansible.builtin.include_tasks: clone.yml
+  tags: [supabase, clone]
+
+- name: Include configuration tasks
+  ansible.builtin.include_tasks: configure.yml
+  tags: [supabase, configure]
+
+- name: Include deployment tasks
+  ansible.builtin.include_tasks: deploy.yml
+  tags: [supabase, deploy]
+
+- name: Include health check tasks
+  ansible.builtin.include_tasks: healthcheck.yml
+  tags: [supabase, healthcheck]

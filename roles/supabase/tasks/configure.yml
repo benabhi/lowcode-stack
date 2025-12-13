@@ -1,0 +1,34 @@
+# ==============================================================================
+# Role: supabase - Configuration Tasks
+# ==============================================================================
+
+---
+- name: Generate Supabase .env file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ supabase_install_path }}/.env"
+    owner: "{{ supabase_system_user }}"
+    group: "{{ supabase_system_group }}"
+    mode: '0600'
+  become: true
+  notify: Restart supabase
+  no_log: true  # Hide secrets from logs
+
+- name: Generate docker-compose.override.yml
+  ansible.builtin.template:
+    src: docker-compose.override.yml.j2
+    dest: "{{ supabase_install_path }}/docker-compose.override.yml"
+    owner: "{{ supabase_system_user }}"
+    group: "{{ supabase_system_group }}"
+    mode: '0644'
+  become: true
+  notify: Restart supabase
+
+- name: Ensure volumes directory exists
+  ansible.builtin.file:
+    path: "{{ supabase_install_path }}/volumes"
+    state: directory
+    owner: "{{ supabase_system_user }}"
+    group: "{{ supabase_system_group }}"
+    mode: '0755'
+  become: true

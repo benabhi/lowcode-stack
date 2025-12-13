@@ -1,0 +1,50 @@
+# ==============================================================================
+# Role: appsmith - Default Variables
+# ==============================================================================
+
+---
+# Installation path
+appsmith_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/appsmith"
+
+# Docker image
+appsmith_image: "appsmith/appsmith-ce"
+appsmith_version: "{{ lowcode_appsmith_version | default('latest') }}"
+
+# Container settings
+appsmith_container_name: "{{ lowcode_appsmith_container_name | default('lowcode-appsmith') }}"
+appsmith_port: "{{ lowcode_appsmith_port | default(8081) }}"
+appsmith_internal_port: 80
+
+# Encryption secrets from vault
+appsmith_encryption_password: "{{ vault_appsmith_encryption_password | default('') }}"
+appsmith_encryption_salt: "{{ vault_appsmith_encryption_salt | default('') }}"
+
+# Telemetry and tracking
+appsmith_disable_telemetry: true
+appsmith_disable_intercom: true
+
+# Watermark patch settings
+appsmith_patch_watermark: true
+appsmith_watermark_pattern: "children:!W&&"
+appsmith_watermark_replacement: "children:false&&"
+appsmith_chunk_path: "/opt/appsmith/editor/static/js"
+
+# Docker network
+appsmith_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# Health check settings
+appsmith_healthcheck_retries: 24
+appsmith_healthcheck_delay: 5
+
+# System user
+appsmith_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+appsmith_system_group: "{{ lowcode_system_group | default('lowcode') }}"
+
+# Domain
+appsmith_domain: "{{ lowcode_domain_appsmith | default('appsmith.localhost') }}"
+
+# Supabase connection (optional)
+appsmith_supabase_enabled: false
+appsmith_supabase_host: "{{ lowcode_server_ip | default('127.0.0.1') }}"
+appsmith_supabase_port: "{{ lowcode_supabase_db_port | default(5432) }}"
+appsmith_supabase_password: "{{ vault_supabase_postgres_password | default('') }}"

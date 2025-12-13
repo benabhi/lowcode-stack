@@ -1,0 +1,43 @@
+# ==============================================================================
+# Role: supabase - Deployment Tasks
+# ==============================================================================
+
+---
+- name: Create Docker network if not exists
+  community.docker.docker_network:
+    name: "{{ supabase_docker_network }}"
+    state: present
+  become: true
+
+- name: Pull Supabase Docker images
+  ansible.builtin.command:
+    cmd: docker compose pull
+    chdir: "{{ supabase_install_path }}"
+  become: true
+  register: supabase_pull
+  changed_when: "'Pulled' in supabase_pull.stdout or 'Downloaded' in supabase_pull.stderr"
+
+- name: Start Supabase services
+  ansible.builtin.command:
+    cmd: docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+    chdir: "{{ supabase_install_path }}"
+  become: true
+  register: supabase_up
+  changed_when: "'Started' in supabase_up.stdout or 'Created' in supabase_up.stdout"
+
+- name: Wait for database to be ready
+  ansible.builtin.command:
+    cmd: docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' supabase-db
+  register: db_health
+  until: db_health.stdout == "healthy"
+  retries: "{{ supabase_healthcheck_retries }}"
+  delay: "{{ supabase_healthcheck_delay }}"
+  become: true
+  changed_when: false
+
+- name: Restart dependent services after DB is healthy
+  ansible.builtin.command:
+    cmd: docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+    chdir: "{{ supabase_install_path }}"
+  become: true
+  changed_when: true

@@ -1,0 +1,66 @@
+# ==============================================================================
+# Role: nginx - Site Configuration Tasks
+# ==============================================================================
+
+---
+- name: Deploy main Nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  notify: Reload nginx
+
+- name: Deploy final HTTPS site configurations
+  ansible.builtin.template:
+    src: site.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  loop: "{{ nginx_sites }}"
+  notify: Reload nginx
+
+- name: Ensure sites are enabled
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item.name }}"
+    dest: "/etc/nginx/sites-enabled/{{ item.name }}"
+    state: link
+  become: true
+  loop: "{{ nginx_sites }}"
+  notify: Reload nginx
+
+- name: Test Nginx configuration
+  ansible.builtin.command: nginx -t
+  become: true
+  changed_when: false
+  register: nginx_test
+
+- name: Display Nginx configuration test result
+  ansible.builtin.debug:
+    msg: "{{ nginx_test.stderr_lines }}"
+
+- name: Ensure Nginx is running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  become: true
+
+- name: Display deployment summary
+  ansible.builtin.debug:
+    msg: |
+      Nginx reverse proxy configured successfully!
+
+      Configured sites:
+      {% for site in nginx_sites %}
+      - {{ site.name }}: https://{{ site.domain }} -> 127.0.0.1:{{ site.upstream_port }}
+        Basic Auth: {{ site.basic_auth | default(false) }}
+        WebSocket: {{ site.websocket | default(false) }}
+      {% endfor %}
+
+      SSL certificates location: {{ nginx_ssl_cert_path }}
+      Auto-renewal: {{ nginx_certbot_auto_renew }}

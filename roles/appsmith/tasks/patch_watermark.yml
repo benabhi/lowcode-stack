@@ -1,0 +1,74 @@
+# ==============================================================================
+# Role: appsmith - Watermark Patch Tasks
+# ==============================================================================
+# This task applies a patch to remove the "Built on Appsmith" watermark
+# from the Community Edition. The patch is NOT persistent across container
+# recreations and will need to be reapplied.
+#
+# Technical details:
+# - Location: /opt/appsmith/editor/static/js/AppViewer.*.chunk.js
+# - Pattern: children:!W&& (minified !hideWatermark check)
+# - Replace with: children:false&& (always false = never show)
+# ==============================================================================
+
+---
+- name: Wait for Appsmith container to be healthy before patching
+  ansible.builtin.command:
+    cmd: docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' {{ appsmith_container_name }}
+  register: appsmith_health_pre_patch
+  until: appsmith_health_pre_patch.stdout == "healthy"
+  retries: "{{ appsmith_healthcheck_retries }}"
+  delay: "{{ appsmith_healthcheck_delay }}"
+  become: true
+  changed_when: false
+
+- name: Find AppViewer chunk file
+  ansible.builtin.command:
+    cmd: docker exec {{ appsmith_container_name }} sh -c 'ls {{ appsmith_chunk_path }}/AppViewer.*.chunk.js 2>/dev/null | head -1'
+  register: appviewer_chunk
+  become: true
+  changed_when: false
+  failed_when: appviewer_chunk.stdout == ""
+
+- name: Check if watermark patch is already applied
+  ansible.builtin.command:
+    cmd: docker exec {{ appsmith_container_name }} grep -c '{{ appsmith_watermark_replacement }}' {{ appviewer_chunk.stdout }}
+  register: patch_check
+  become: true
+  changed_when: false
+  failed_when: false
+
+- name: Apply watermark patch
+  ansible.builtin.command:
+    cmd: docker exec {{ appsmith_container_name }} perl -i -pe 's/{{ appsmith_watermark_pattern }}/{{ appsmith_watermark_replacement }}/g' {{ appviewer_chunk.stdout }}
+  become: true
+  when: patch_check.stdout == "0" or patch_check.rc != 0
+  register: patch_result
+  changed_when: patch_result.rc == 0
+
+- name: Verify watermark patch was applied
+  ansible.builtin.command:
+    cmd: docker exec {{ appsmith_container_name }} grep -c '{{ appsmith_watermark_replacement }}' {{ appviewer_chunk.stdout }}
+  register: verify_patch
+  become: true
+  changed_when: false
+  failed_when: verify_patch.stdout == "0"
+
+- name: Display patch status
+  ansible.builtin.debug:
+    msg: |
+      Appsmith watermark patch status:
+      {% if patch_check.stdout != "0" and patch_check.rc == 0 %}
+      - Status: Already applied (no action needed)
+      {% else %}
+      - Status: Successfully applied
+      {% endif %}
+      - File: {{ appviewer_chunk.stdout }}
+
+      IMPORTANT: This patch is NOT persistent across container recreations.
+      Run the playbook with --tags watermark to reapply if needed.
+
+      To verify manually:
+        docker exec {{ appsmith_container_name }} grep -c 'children:false&&' {{ appviewer_chunk.stdout }}
+
+      If you see the watermark, clear your browser cache (Ctrl+Shift+F5)

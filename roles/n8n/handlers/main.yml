@@ -1,0 +1,22 @@
+# ==============================================================================
+# Role: n8n - Handlers
+# ==============================================================================
+
+---
+- name: Restart n8n
+  ansible.builtin.command:
+    cmd: docker compose restart
+    chdir: "{{ n8n_install_path }}"
+  become: true
+
+- name: Stop n8n
+  ansible.builtin.command:
+    cmd: docker compose down
+    chdir: "{{ n8n_install_path }}"
+  become: true
+
+- name: Update n8n
+  ansible.builtin.shell:
+    cmd: docker compose pull && docker compose up -d
+    chdir: "{{ n8n_install_path }}"
+  become: true

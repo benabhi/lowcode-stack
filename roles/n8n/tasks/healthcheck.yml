@@ -1,0 +1,31 @@
+# ==============================================================================
+# Role: n8n - Health Check Tasks
+# ==============================================================================
+
+---
+- name: Wait for n8n container to be running
+  community.docker.docker_container_info:
+    name: "{{ n8n_container_name }}"
+  register: n8n_container_info
+  until: n8n_container_info.container.State.Running | default(false)
+  retries: "{{ n8n_healthcheck_retries }}"
+  delay: "{{ n8n_healthcheck_delay }}"
+  become: true
+
+- name: Wait for n8n to be healthy
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ n8n_port }}/healthz"
+    status_code: 200
+  register: n8n_health
+  until: n8n_health.status == 200
+  retries: "{{ n8n_healthcheck_retries }}"
+  delay: "{{ n8n_healthcheck_delay }}"
+
+- name: Display n8n status
+  ansible.builtin.debug:
+    msg: |
+      n8n is running and healthy!
+      - Container: {{ n8n_container_name }}
+      - Internal URL: http://127.0.0.1:{{ n8n_port }}
+      - External URL: https://{{ n8n_host }}
+      - Webhook URL: {{ n8n_webhook_url }}
