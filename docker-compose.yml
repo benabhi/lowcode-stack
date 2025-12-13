@@ -1,0 +1,41 @@
+# ==============================================================================
+# Docker Compose - Ansible Control Node
+# ==============================================================================
+# Este archivo facilita la ejecución de Ansible desde Docker.
+#
+# Construir:
+#   docker compose build
+#
+# Ejecutar:
+#   docker compose run --rm ansible playbooks/site.yml --ask-vault-pass
+#
+# Shell interactivo:
+#   docker compose run --rm --entrypoint bash ansible
+# ==============================================================================
+
+services:
+  ansible:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lowcode-ansible:latest
+    container_name: lowcode-ansible
+    stdin_open: true
+    tty: true
+    volumes:
+      # Montar el proyecto (para desarrollo/cambios en tiempo real)
+      - .:/ansible:rw
+      # Montar SSH keys del host (a ubicacion temporal, el entrypoint las copia con permisos correctos)
+      - ~/.ssh:/tmp/.ssh-host:ro
+      # Persistir roles descargados de Galaxy
+      - ansible-galaxy-cache:/root/.ansible
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=False
+      - ANSIBLE_FORCE_COLOR=True
+      - TERM=xterm-256color
+    working_dir: /ansible
+    network_mode: host
+
+volumes:
+  ansible-galaxy-cache:
+    driver: local

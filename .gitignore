@@ -2,6 +2,13 @@
 # Git Ignore - lowcode_stack Ansible
 # ==============================================================================
 
+# Python virtualenv
+venv/
+.venv/
+ENV/
+__pycache__/
+*.py[cod]
+
 # Ansible vault password files
 .vault_pass
 *.vault_pass

@@ -12,98 +12,106 @@ Coleccion profesional de Ansible para desplegar un stack completo de desarrollo 
 
 ## Requisitos
 
-- **Control Node**: Python 3.10+, Ansible 2.14+
+- **Control Node**: Docker (Windows/macOS) o Python 3.10+ con Ansible (Linux)
 - **Target Node**: Ubuntu 24.04 LTS
 - **Dominios**: Configurados apuntando al servidor (DNS)
 - **Puertos**: 22 (SSH), 80 (HTTP), 443 (HTTPS)
+- **SSH Key**: Configurada para acceso al servidor
 
-## Instalacion de Ansible
+## Instalacion
 
-### Opcion 1: Virtualenv (Recomendado)
+### Opcion 1: Docker (Recomendado para Windows/macOS)
+
+El proyecto incluye un contenedor Docker con Ansible preconfigurado.
 
 ```bash
-# Instalar Python y venv (si no estan instalados)
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/lowcode-stack.git
+cd lowcode-stack
+
+# Construir el contenedor
+docker compose build
+
+# Verificar que funciona
+docker compose run --rm ansible --help
+
+# Verificar conexion al servidor
+docker compose run --rm ansible all -m ping
+```
+
+**Comandos principales:**
+
+```bash
+# Despliegue completo
+docker compose run --rm ansible playbooks/site.yml --ask-vault-pass
+
+# Solo setup del sistema
+docker compose run --rm ansible playbooks/setup.yml
+
+# Solo servicios
+docker compose run --rm ansible playbooks/deploy.yml --ask-vault-pass
+
+# Dry run (sin cambios)
+docker compose run --rm ansible playbooks/site.yml --check --diff
+
+# Shell interactivo
+docker compose run --rm --entrypoint bash ansible
+```
+
+### Opcion 2: Virtualenv (Linux/macOS)
+
+```bash
+# Instalar Python y venv
 # Ubuntu/Debian:
 sudo apt update && sudo apt install -y python3 python3-pip python3-venv
 
 # macOS:
-# brew install python3
+brew install python3
 
-# Windows:
-# Descargar de https://www.python.org/downloads/
-
-# Crear virtualenv
+# Crear y activar virtualenv
 python3 -m venv venv
-
-# Activar virtualenv
-# Linux/macOS:
 source venv/bin/activate
 
-# Windows (PowerShell):
-# .\venv\Scripts\Activate.ps1
-
-# Windows (CMD):
-# venv\Scripts\activate.bat
-
-# Instalar Ansible (ultima version)
+# Instalar Ansible
 pip install --upgrade pip
 pip install ansible
 
 # Verificar instalacion
 ansible --version
-```
 
-### Opcion 2: pipx (Instalacion aislada)
-
-```bash
-# Instalar pipx
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
-
-# Instalar Ansible
-pipx install ansible
-
-# Verificar
-ansible --version
+# Instalar roles de Galaxy
+ansible-galaxy install -r requirements.yml
 ```
 
 ### Opcion 3: Gestor de paquetes del sistema
 
 ```bash
-# Ubuntu/Debian (puede no ser la ultima version)
-sudo apt update
-sudo apt install -y ansible
+# Ubuntu/Debian
+sudo apt update && sudo apt install -y ansible
 
 # macOS con Homebrew
 brew install ansible
+
+# Instalar roles de Galaxy
+ansible-galaxy install -r requirements.yml
 ```
 
 ## Quick Start
 
-### 1. Clonar el repositorio
+### 1. Clonar y construir
 
 ```bash
 git clone https://github.com/tu-usuario/lowcode-stack.git
 cd lowcode-stack
+
+# Si usas Docker (Windows/macOS):
+docker compose build
+
+# Si usas virtualenv (Linux):
+# source venv/bin/activate && ansible-galaxy install -r requirements.yml
 ```
 
-### 2. Activar virtualenv (si usaste Opcion 1)
-
-```bash
-# Linux/macOS:
-source venv/bin/activate
-
-# Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-```
-
-### 3. Instalar dependencias de Ansible Galaxy
-
-```bash
-ansible-galaxy install -r requirements.yml
-```
-
-### 4. Configurar el inventario
+### 2. Configurar el inventario
 
 Editar `inventory/production/hosts.yml`:
 
@@ -117,7 +125,7 @@ all:
           ansible_user: root
 ```
 
-### 5. Configurar variables
+### 3. Configurar variables
 
 Editar `inventory/production/group_vars/all.yml`:
 
@@ -132,7 +140,7 @@ lowcode_domain_appsmith: "appsmith.tudominio.com"
 lowcode_letsencrypt_email: "admin@tudominio.com"
 ```
 
-### 6. Generar secretos
+### 4. Generar secretos
 
 ```bash
 chmod +x files/scripts/generate_secrets.sh
@@ -144,7 +152,7 @@ Copiar los valores generados a `inventory/production/group_vars/all/vault.yml`.
 **Importante**: Generar las JWT keys de Supabase en:
 https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys
 
-### 7. Encriptar secretos con Ansible Vault
+### 5. Encriptar secretos con Ansible Vault
 
 ```bash
 ansible-vault encrypt inventory/production/group_vars/all/vault.yml
@@ -152,22 +160,29 @@ ansible-vault encrypt inventory/production/group_vars/all/vault.yml
 
 Guardar la contrasena del vault de forma segura.
 
-### 8. Desplegar
+### 6. Desplegar
 
 ```bash
-# Despliegue completo
+# Con Docker (Windows/macOS):
+docker compose run --rm ansible playbooks/site.yml --ask-vault-pass
+
+# Con virtualenv (Linux):
 ansible-playbook playbooks/site.yml --ask-vault-pass
 
-# O con archivo de password
+# O con archivo de password (ambos):
 echo "tu_password" > .vault_pass
 chmod 600 .vault_pass
-ansible-playbook playbooks/site.yml
+docker compose run --rm ansible playbooks/site.yml
+# o: ansible-playbook playbooks/site.yml
 ```
 
 ## Estructura del Proyecto
 
 ```
 .
+├── Dockerfile                  # Contenedor Ansible
+├── docker-compose.yml          # Orquestacion Docker
+├── docker-entrypoint.sh        # Script de entrada
 ├── ansible.cfg                 # Configuracion de Ansible
 ├── requirements.yml            # Dependencias de Galaxy
 ├── inventory/
