@@ -101,7 +101,7 @@ nginx_sites:
   - name: "supabase"
     domain: "{{ lowcode_domain_supabase }}"
     upstream_host: "127.0.0.1"
-    upstream_port: "{{ lowcode_supabase_api_port }}"
+    upstream_port: "{{ lowcode_supabase_studio_port }}"  # Studio UI, not Kong API
     basic_auth: true                     # Enable/disable basic auth
     basic_auth_realm: "Supabase Studio"
     websocket: true                      # Enable WebSocket support
