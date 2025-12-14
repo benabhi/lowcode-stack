@@ -44,9 +44,4 @@
 
 - name: Display Supabase status
   ansible.builtin.debug:
-    msg: |
-      Supabase deployment complete!
-      - Database: healthy
-      - API (Kong): http://127.0.0.1:{{ supabase_api_port }}
-      - Studio: http://127.0.0.1:{{ supabase_studio_port }}
-      - External URL: {{ supabase_site_url }}
+    msg: "Supabase: healthy (API::{{ supabase_api_port }}, Studio::{{ supabase_studio_port }})"

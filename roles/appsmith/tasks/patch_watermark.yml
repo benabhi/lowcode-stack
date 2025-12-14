@@ -56,19 +56,4 @@
 
 - name: Display patch status
   ansible.builtin.debug:
-    msg: |
-      Appsmith watermark patch status:
-      {% if patch_check.stdout != "0" and patch_check.rc == 0 %}
-      - Status: Already applied (no action needed)
-      {% else %}
-      - Status: Successfully applied
-      {% endif %}
-      - File: {{ appviewer_chunk.stdout }}
-
-      IMPORTANT: This patch is NOT persistent across container recreations.
-      Run the playbook with --tags watermark to reapply if needed.
-
-      To verify manually:
-        docker exec {{ appsmith_container_name }} grep -c 'children:false&&' {{ appviewer_chunk.stdout }}
-
-      If you see the watermark, clear your browser cache (Ctrl+Shift+F5)
+    msg: "Watermark patch: {% if patch_check.stdout != '0' and patch_check.rc == 0 %}already applied{% else %}applied{% endif %} (not persistent, reapply with --tags watermark)"

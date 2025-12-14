@@ -23,9 +23,4 @@
 
 - name: Display n8n status
   ansible.builtin.debug:
-    msg: |
-      n8n is running and healthy!
-      - Container: {{ n8n_container_name }}
-      - Internal URL: http://127.0.0.1:{{ n8n_port }}
-      - External URL: https://{{ n8n_host }}
-      - Webhook URL: {{ n8n_webhook_url }}
+    msg: "n8n: healthy (port {{ n8n_port }})"

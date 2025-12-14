@@ -23,18 +23,10 @@
 
     - name: Display deployment info
       ansible.builtin.debug:
-        msg: |
-          =============================================
-          SERVICES DEPLOYMENT
-          =============================================
-          Target: {{ inventory_hostname }} ({{ ansible_host }})
-          Services to deploy:
-            - Redis
-            - Supabase
-            - Appsmith (with watermark patch)
-            - n8n
-            - Nginx (reverse proxy + SSL)
-          =============================================
+        msg:
+          - "SERVICES DEPLOYMENT"
+          - "Target: {{ inventory_hostname }} ({{ ansible_host }})"
+          - "Services: Redis, Supabase, Appsmith, n8n, Nginx"
       tags: always
 
   roles:
@@ -59,14 +51,6 @@
   post_tasks:
     - name: Display deployment summary
       ansible.builtin.debug:
-        msg: |
-          =============================================
-          SERVICES DEPLOYMENT COMPLETE!
-          =============================================
-
-          Service URLs:
-          - Supabase Studio: https://{{ lowcode_domain_supabase }}
-          - n8n:             https://{{ lowcode_domain_n8n }}
-          - Appsmith:        https://{{ lowcode_domain_appsmith }}
-
-          =============================================
+        msg:
+          - "DEPLOYMENT COMPLETE!"
+          - "URLs: https://{{ lowcode_domain_supabase }} | https://{{ lowcode_domain_n8n }} | https://{{ lowcode_domain_appsmith }}"

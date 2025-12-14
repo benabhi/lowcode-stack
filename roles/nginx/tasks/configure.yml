@@ -52,15 +52,4 @@
 
 - name: Display deployment summary
   ansible.builtin.debug:
-    msg: |
-      Nginx reverse proxy configured successfully!
-
-      Configured sites:
-      {% for site in nginx_sites %}
-      - {{ site.name }}: https://{{ site.domain }} -> 127.0.0.1:{{ site.upstream_port }}
-        Basic Auth: {{ site.basic_auth | default(false) }}
-        WebSocket: {{ site.websocket | default(false) }}
-      {% endfor %}
-
-      SSL certificates location: {{ nginx_ssl_cert_path }}
-      Auto-renewal: {{ nginx_certbot_auto_renew }}
+    msg: "Nginx: configured ({{ nginx_sites | map(attribute='domain') | join(', ') }})"

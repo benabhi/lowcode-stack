@@ -24,8 +24,4 @@
 
 - name: Display Appsmith status
   ansible.builtin.debug:
-    msg: |
-      Appsmith is running and healthy!
-      - Container: {{ appsmith_container_name }}
-      - Internal URL: http://127.0.0.1:{{ appsmith_port }}
-      - External URL: https://{{ appsmith_domain }}
+    msg: "Appsmith: healthy (port {{ appsmith_port }})"
