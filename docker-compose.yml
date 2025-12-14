@@ -32,6 +32,9 @@ services:
     environment:
       - ANSIBLE_HOST_KEY_CHECKING=False
       - ANSIBLE_FORCE_COLOR=True
+      - ANSIBLE_DEPRECATION_WARNINGS=False
+      - ANSIBLE_SYSTEM_WARNINGS=False
+      - ANSIBLE_COMMAND_WARNINGS=False
       - TERM=xterm-256color
     working_dir: /ansible
     network_mode: host
