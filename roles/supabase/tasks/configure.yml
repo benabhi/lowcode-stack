@@ -3,6 +3,45 @@
 # ==============================================================================
 
 ---
+# Remove analytics dependencies from docker-compose.yml
+# The analytics stack (vector + analytics) is optional and often problematic
+- name: Remove analytics and vector dependencies from docker-compose.yml
+  ansible.builtin.shell: |
+    cd {{ supabase_install_path }}
+    python3 << 'PYTHON_SCRIPT'
+    import yaml
+    import sys
+
+    with open('docker-compose.yml', 'r') as f:
+        data = yaml.safe_load(f)
+
+    # Remove analytics and vector from all depends_on sections
+    if 'services' in data:
+        for service_name, service_config in data['services'].items():
+            if 'depends_on' in service_config:
+                deps = service_config['depends_on']
+                if isinstance(deps, dict):
+                    deps.pop('analytics', None)
+                    deps.pop('vector', None)
+                    # Remove depends_on entirely if empty
+                    if not deps:
+                        del service_config['depends_on']
+                elif isinstance(deps, list):
+                    service_config['depends_on'] = [d for d in deps if d not in ['analytics', 'vector']]
+                    if not service_config['depends_on']:
+                        del service_config['depends_on']
+
+    with open('docker-compose.yml', 'w') as f:
+        yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+
+    print("Successfully removed analytics/vector dependencies")
+    PYTHON_SCRIPT
+  args:
+    executable: /bin/bash
+  become: true
+  register: python_result
+  changed_when: "'Successfully' in python_result.stdout"
+
 - name: Generate Supabase .env file
   ansible.builtin.template:
     src: env.j2

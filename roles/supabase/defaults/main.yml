@@ -14,7 +14,8 @@ supabase_git_depth: 1
 # Ports
 supabase_studio_port: "{{ lowcode_supabase_studio_port | default(3000) }}"
 supabase_api_port: "{{ lowcode_supabase_api_port | default(8000) }}"
-supabase_db_port: "{{ lowcode_supabase_db_port | default(5432) }}"
+# DB port is 5433 to avoid conflict with pooler (which uses 5432)
+supabase_db_port: "{{ lowcode_supabase_db_port | default(5433) }}"
 supabase_inbucket_port: 54324
 
 # Features
