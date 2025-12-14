@@ -170,6 +170,74 @@ Los certificados SSL se generan automaticamente con Let's Encrypt.
 - Renovacion automatica (cron job diario)
 - Para testing: `nginx_certbot_staging: true` en `all.yml`
 
+## Comunicación Interna entre Servicios
+
+Todos los servicios están en la red Docker `lowcode-network` y pueden comunicarse entre sí usando los siguientes hostnames internos:
+
+| Servicio | Hostname Interno | Puerto | Descripción |
+|----------|------------------|--------|-------------|
+| Supabase API | `supabase-kong` | 8000 | API REST y GraphQL |
+| Supabase DB | `supabase-db` | 5432 | PostgreSQL directo |
+| Supabase Studio | `supabase-studio` | 3000 | UI de administración |
+| n8n | `lowcode-n8n` | 5678 | Workflow automation |
+| Appsmith | `lowcode-appsmith` | 80 | Low-code builder |
+| Redis | `lowcode-redis` | 6379 | Cache |
+
+### Ejemplo: Conectar n8n a Supabase
+
+En n8n, usa estas URLs para conectar con Supabase:
+
+```
+# API REST
+http://supabase-kong:8000/rest/v1/
+
+# Headers requeridos:
+apikey: <tu_anon_key>
+Authorization: Bearer <tu_anon_key>
+```
+
+### Ejemplo: Conectar Appsmith a Supabase
+
+En Appsmith, crea una nueva datasource PostgreSQL:
+
+```
+Host: supabase-db
+Port: 5432
+Database: postgres
+User: postgres
+Password: <supabase_postgres_password>
+```
+
+### Claves de API de Supabase
+
+Las claves JWT se encuentran en `/opt/lowcode-stack/.secrets.yml`:
+
+- `supabase_anon_key`: Para operaciones públicas (respeta RLS)
+- `supabase_service_role_key`: Acceso completo (bypass RLS) - **usar con cuidado**
+
+## Exponer Nuevas URLs Públicas
+
+Para exponer un nuevo servicio públicamente, edita `inventory/production/group_vars/all.yml`:
+
+```yaml
+nginx_sites:
+  # ... servicios existentes ...
+
+  - name: "mi-servicio"
+    domain: "mi-servicio.tudominio.com"
+    upstream_host: "127.0.0.1"
+    upstream_port: 3001
+    basic_auth: false
+    websocket: false
+    max_body_size: "10M"
+```
+
+Luego ejecuta:
+
+```bash
+docker compose run --rm ansible playbooks/site.yml --tags nginx --ask-pass
+```
+
 ## Seguridad
 
 - Firewall (UFW) - Solo SSH, HTTP, HTTPS
