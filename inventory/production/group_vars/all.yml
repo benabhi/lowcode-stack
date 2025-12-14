@@ -156,7 +156,7 @@ appsmith_watermark_replacement: "children:false&&"
 appsmith_chunk_path: "/opt/appsmith/editor/static/js"
 
 # Health check settings
-appsmith_healthcheck_retries: 24         # 2 minutes with 5s delay
+appsmith_healthcheck_retries: 36         # 3 minutes with 5s delay
 appsmith_healthcheck_delay: 5
 
 # ==============================================================================

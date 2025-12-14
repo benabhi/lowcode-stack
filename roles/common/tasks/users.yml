@@ -21,13 +21,19 @@
     state: present
   become: true
 
+- name: Check if docker group exists
+  ansible.builtin.command: getent group docker
+  register: docker_group_check
+  changed_when: false
+  failed_when: false
+
 - name: Add system user to docker group
   ansible.builtin.user:
     name: "{{ common_system_user }}"
     groups: docker
     append: true
   become: true
-  ignore_errors: true  # Docker may not be installed yet
+  when: docker_group_check.rc == 0
 
 - name: Create base directory for services
   ansible.builtin.file:
