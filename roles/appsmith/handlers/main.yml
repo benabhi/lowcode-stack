@@ -20,6 +20,3 @@
     cmd: docker compose pull && docker compose up -d
     chdir: "{{ appsmith_install_path }}"
   become: true
-
-- name: Reapply watermark patch
-  ansible.builtin.include_tasks: patch_watermark.yml

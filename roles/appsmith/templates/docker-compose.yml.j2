@@ -25,7 +25,7 @@ services:
 {% endif %}
 {% if appsmith_supabase_enabled and appsmith_supabase_password %}
       # Supabase PostgreSQL connection
-      - APPSMITH_DB_URL=postgresql://postgres:{{ appsmith_supabase_password }}@{{ appsmith_supabase_host }}:{{ appsmith_supabase_port }}/postgres
+      - APPSMITH_DB_URL=postgresql://postgres:{{ appsmith_supabase_password | urlencode }}@{{ appsmith_supabase_host }}:{{ appsmith_supabase_port }}/postgres
 {% endif %}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/api/v1/health"]

@@ -24,4 +24,4 @@
 - name: Reload sysctl
   ansible.builtin.command: sysctl -p
   become: true
-  changed_when: true
+  changed_when: false

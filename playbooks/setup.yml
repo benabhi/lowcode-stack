@@ -20,6 +20,7 @@
           - ansible_distribution == 'Ubuntu'
           - ansible_distribution_version == '24.04'
         fail_msg: "This playbook requires Ubuntu 24.04 LTS"
+      tags: always
 
     - name: Display setup info
       ansible.builtin.debug:
@@ -35,6 +36,7 @@
             - System user: {{ lowcode_system_user }}
             - Base directory: {{ lowcode_base_path }}
           =============================================
+      tags: always
 
   roles:
     - role: common

@@ -19,6 +19,7 @@
       register: docker_check
       changed_when: false
       failed_when: docker_check.rc != 0
+      tags: always
 
     - name: Display deployment info
       ansible.builtin.debug:
@@ -34,6 +35,7 @@
             - n8n
             - Nginx (reverse proxy + SSL)
           =============================================
+      tags: always
 
   roles:
     - role: secrets
