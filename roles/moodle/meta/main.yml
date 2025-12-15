@@ -1,0 +1,17 @@
+# ==============================================================================
+# Role: moodle - Metadata
+# ==============================================================================
+
+---
+galaxy_info:
+  role_name: moodle
+  author: lowcode-stack
+  description: Deploy Moodle LMS as optional service
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - "24.04"
+
+dependencies: []

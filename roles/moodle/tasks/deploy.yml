@@ -1,0 +1,51 @@
+# ==============================================================================
+# Role: moodle - Deployment Tasks
+# ==============================================================================
+
+---
+- name: Ensure moodle directory exists
+  ansible.builtin.file:
+    path: "{{ moodle_install_path }}"
+    state: directory
+    owner: "{{ moodle_system_user }}"
+    group: "{{ moodle_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Ensure moodle data directories exist
+  ansible.builtin.file:
+    path: "{{ moodle_install_path }}/{{ item }}"
+    state: directory
+    owner: "1001"
+    group: "1001"
+    mode: '0755'
+  become: true
+  loop:
+    - data
+    - data/moodle
+    - data/moodledata
+    - data/mariadb
+
+- name: Create Docker network if not exists
+  community.docker.docker_network:
+    name: "{{ moodle_docker_network }}"
+    state: present
+  become: true
+
+- name: Generate moodle docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ moodle_install_path }}/docker-compose.yml"
+    owner: "{{ moodle_system_user }}"
+    group: "{{ moodle_system_group }}"
+    mode: '0644'
+  become: true
+  notify: Restart moodle
+
+- name: Pull and start moodle stack with docker compose
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ moodle_install_path }}"
+  become: true
+  register: moodle_compose_up
+  changed_when: "'Started' in moodle_compose_up.stdout or 'Created' in moodle_compose_up.stdout"

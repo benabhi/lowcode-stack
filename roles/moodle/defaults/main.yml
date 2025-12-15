@@ -1,0 +1,54 @@
+# ==============================================================================
+# Role: moodle - Default Variables
+# ==============================================================================
+
+---
+# Installation path
+moodle_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/moodle"
+
+# Docker image (bitnamilegacy - bitnami deprecated Aug 2025)
+moodle_image: "bitnamilegacy/moodle"
+moodle_version: "{{ lowcode_moodle_version | default('latest') }}"
+
+# Container settings
+moodle_container_name: "{{ lowcode_moodle_container_name | default('lowcode-moodle') }}"
+moodle_http_port: "{{ lowcode_moodle_port | default(8082) }}"
+
+# App settings
+moodle_site_name: "{{ lowcode_moodle_site_name | default('Moodle LMS') }}"
+moodle_domain: "{{ lowcode_domain_moodle | default('moodle.localhost') }}"
+moodle_username: "{{ lowcode_moodle_username | default('admin') }}"
+moodle_password: "{{ lowcode_secrets.moodle_admin_password | default('change-me-moodle-password') }}"
+moodle_email: "{{ lowcode_moodle_email | default('admin@localhost') }}"
+
+# Reverse proxy settings (set to true when using nginx with SSL)
+moodle_reverseproxy: "{{ lowcode_moodle_reverseproxy | default('false') }}"
+moodle_sslproxy: "{{ lowcode_moodle_sslproxy | default('false') }}"
+
+# ==============================================================================
+# MariaDB Configuration - Own Container (Independent)
+# ==============================================================================
+moodle_mariadb_image: "mariadb"
+moodle_mariadb_version: "10.11"
+moodle_mariadb_container_name: "moodle-db"
+
+moodle_db_host: "{{ moodle_mariadb_container_name }}"
+moodle_db_port: 3306
+moodle_db_name: "moodle"
+moodle_db_user: "moodle"
+moodle_db_password: "{{ lowcode_secrets.moodle_db_password | default('change-me-moodle-db-password') }}"
+moodle_db_root_password: "{{ lowcode_secrets.moodle_db_root_password | default('change-me-moodle-db-root') }}"
+
+# Timezone
+moodle_timezone: "{{ lowcode_timezone | default('America/Argentina/Buenos_Aires') }}"
+
+# Docker network
+moodle_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# Health check settings
+moodle_healthcheck_retries: 24
+moodle_healthcheck_delay: 15
+
+# System user
+moodle_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+moodle_system_group: "{{ lowcode_system_group | default('lowcode') }}"

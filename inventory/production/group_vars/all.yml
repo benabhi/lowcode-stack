@@ -143,6 +143,15 @@ nginx_optional_sites:
     max_body_size: "50M"
     enabled: "{{ lowcode_enable_docmost | default(false) }}"
 
+  - name: "moodle"
+    domain: "{{ lowcode_domain_moodle }}"
+    upstream_host: "127.0.0.1"
+    upstream_port: "{{ lowcode_moodle_port }}"
+    basic_auth: false                    # Moodle has its own auth
+    websocket: false
+    max_body_size: "100M"                # Large file uploads for courses
+    enabled: "{{ lowcode_enable_moodle | default(false) }}"
+
 # ==============================================================================
 # SUPABASE CONFIGURATION
 # ==============================================================================
@@ -247,6 +256,7 @@ common_reboot_if_required: false
 # Set to true to enable optional services
 lowcode_enable_gitea: true
 lowcode_enable_docmost: true
+lowcode_enable_moodle: true                   # Moodle LMS
 
 # ==============================================================================
 # GITEA CONFIGURATION (Optional - Git Server)
@@ -269,6 +279,19 @@ lowcode_domain_docmost: "docmost.{{ lowcode_domain_base }}"
 lowcode_docmost_version: "latest"
 lowcode_docmost_port: 3002
 lowcode_docmost_container_name: "lowcode-docmost"
+
+# ==============================================================================
+# MOODLE CONFIGURATION (Optional - LMS Platform)
+# ==============================================================================
+lowcode_domain_moodle: "moodle.{{ lowcode_domain_base }}"
+lowcode_moodle_version: "latest"             # Moodle (bitnamilegacy)
+lowcode_moodle_port: 8082
+lowcode_moodle_container_name: "lowcode-moodle"
+
+# Moodle settings
+lowcode_moodle_site_name: "CENT 40 - Moodle"
+lowcode_moodle_username: "admin"
+lowcode_moodle_email: "admin@{{ lowcode_domain_base }}"
 
 # Firewall (UFW)
 common_firewall_enabled: true

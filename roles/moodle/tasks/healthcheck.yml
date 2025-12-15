@@ -1,0 +1,18 @@
+# ==============================================================================
+# Role: moodle - Health Check Tasks
+# ==============================================================================
+
+---
+- name: Wait for Moodle to be healthy
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ moodle_http_port }}"
+    status_code: [200, 302, 303]
+    timeout: 10
+  register: moodle_health
+  until: moodle_health.status in [200, 302, 303]
+  retries: "{{ moodle_healthcheck_retries }}"
+  delay: "{{ moodle_healthcheck_delay }}"
+
+- name: Moodle health check passed
+  ansible.builtin.debug:
+    msg: "Moodle is healthy at http://127.0.0.1:{{ moodle_http_port }}"

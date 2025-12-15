@@ -17,6 +17,7 @@
 #   --tags nginx             # Only Nginx
 #   --tags gitea             # Only Gitea (optional)
 #   --tags docmost           # Only Docmost (optional)
+#   --tags moodle            # Only Moodle (optional)
 #   --tags watermark         # Only apply Appsmith watermark patch
 # ==============================================================================
 
@@ -47,7 +48,7 @@
           - "LOW-CODE STACK DEPLOYMENT"
           - "Target: {{ inventory_hostname }} ({{ ansible_host }})"
           - "Core domains: {{ lowcode_domain_supabase }} | {{ lowcode_domain_n8n }} | {{ lowcode_domain_appsmith }}"
-          - "Optional domains: {{ lowcode_domain_gitea | default('not configured') }} | {{ lowcode_domain_docmost | default('not configured') }}"
+          - "Optional: gitea={{ lowcode_enable_gitea | default(false) }} | docmost={{ lowcode_enable_docmost | default(false) }} | moodle={{ lowcode_enable_moodle | default(false) }}"
       tags: always
 
   roles:
@@ -101,11 +102,16 @@
       tags: [docmost, deploy, optional]
       when: lowcode_enable_docmost | default(false) | bool
 
+    # Phase 9: Moodle (optional LMS platform)
+    - role: moodle
+      tags: [moodle, deploy, optional]
+      when: lowcode_enable_moodle | default(false) | bool
+
     # ==========================================================================
     # NGINX (must be last to configure all services)
     # ==========================================================================
 
-    # Phase 9: Nginx reverse proxy (last, after all services are up)
+    # Phase 10: Nginx reverse proxy (last, after all services are up)
     - role: nginx
       tags: [nginx, deploy, core]
 
@@ -115,6 +121,6 @@
         msg:
           - "DEPLOYMENT COMPLETE!"
           - "Core URLs: https://{{ lowcode_domain_supabase }} | https://{{ lowcode_domain_n8n }} | https://{{ lowcode_domain_appsmith }}"
-          - "Optional URLs: {{ 'https://' + lowcode_domain_gitea if lowcode_enable_gitea | default(false) else 'gitea disabled' }} | {{ 'https://' + lowcode_domain_docmost if lowcode_enable_docmost | default(false) else 'docmost disabled' }}"
+          - "Optional: {{ 'gitea OK' if lowcode_enable_gitea | default(false) else 'gitea off' }} | {{ 'docmost OK' if lowcode_enable_docmost | default(false) else 'docmost off' }} | {{ 'moodle OK' if lowcode_enable_moodle | default(false) else 'moodle off' }}"
           - "Appsmith watermark: reapply with --tags watermark after restart"
       tags: always

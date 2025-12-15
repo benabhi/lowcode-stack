@@ -1,0 +1,10 @@
+# ==============================================================================
+# Role: moodle - Handlers
+# ==============================================================================
+
+---
+- name: Restart moodle
+  ansible.builtin.command:
+    cmd: docker compose restart
+    chdir: "{{ moodle_install_path }}"
+  become: true
