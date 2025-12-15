@@ -4,6 +4,30 @@
 # ==============================================================================
 
 services:
+  # ==========================================================================
+  # Redis Cache (Independent - for queue mode)
+  # ==========================================================================
+{% if n8n_redis_enabled %}
+  n8n-redis:
+    image: {{ n8n_redis_image }}:{{ n8n_redis_version }}
+    container_name: {{ n8n_redis_container_name }}
+    restart: unless-stopped
+    command: redis-server --requirepass {{ n8n_redis_password }} --appendonly yes
+    volumes:
+      - n8n_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "{{ n8n_redis_password }}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - {{ n8n_docker_network }}
+{% endif %}
+
+  # ==========================================================================
+  # n8n Application
+  # ==========================================================================
   n8n:
     image: {{ n8n_image }}:{{ n8n_version }}
     container_name: {{ n8n_container_name }}
@@ -46,12 +70,10 @@ services:
       - EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS={{ n8n_executions_data_save_manual | string | lower }}
 
 {% if n8n_redis_enabled %}
-      # Redis for queue/caching
+      # Redis for queue/caching (own container)
       - QUEUE_BULL_REDIS_HOST={{ n8n_redis_host }}
       - QUEUE_BULL_REDIS_PORT={{ n8n_redis_port }}
-{% if n8n_redis_password %}
       - QUEUE_BULL_REDIS_PASSWORD={{ n8n_redis_password }}
-{% endif %}
 {% endif %}
 
 {% if n8n_smtp_enabled %}
@@ -72,10 +94,19 @@ services:
       start_period: 30s
     networks:
       - {{ n8n_docker_network }}
+{% if n8n_redis_enabled %}
+    depends_on:
+      n8n-redis:
+        condition: service_healthy
+{% endif %}
 
 volumes:
   n8n_data:
     driver: local
+{% if n8n_redis_enabled %}
+  n8n_redis_data:
+    driver: local
+{% endif %}
 
 networks:
   {{ n8n_docker_network }}:

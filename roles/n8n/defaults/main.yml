@@ -42,11 +42,17 @@ n8n_executions_data_save_on_error: "all"
 n8n_executions_data_save_on_success: "all"
 n8n_executions_data_save_manual: true
 
-# Redis configuration (for queue mode)
+# ==============================================================================
+# Redis Configuration - Own Container (Independent)
+# ==============================================================================
 n8n_redis_enabled: true
-n8n_redis_host: "{{ lowcode_redis_container_name | default('lowcode-redis') }}"
+n8n_redis_image: "redis"
+n8n_redis_version: "7-alpine"
+n8n_redis_container_name: "n8n-redis"
+
+n8n_redis_host: "{{ n8n_redis_container_name }}"
 n8n_redis_port: 6379
-n8n_redis_password: "{{ lowcode_secrets.redis_password | default('') }}"
+n8n_redis_password: "{{ lowcode_secrets.n8n_redis_password | default('change-me-n8n-redis-password') }}"
 
 # SMTP configuration (optional)
 n8n_smtp_enabled: false

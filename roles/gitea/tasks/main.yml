@@ -1,0 +1,12 @@
+# ==============================================================================
+# Role: gitea - Main Tasks
+# ==============================================================================
+
+---
+- name: Include deployment tasks
+  ansible.builtin.include_tasks: deploy.yml
+  tags: [gitea, deploy, optional]
+
+- name: Include health check tasks
+  ansible.builtin.include_tasks: healthcheck.yml
+  tags: [gitea, healthcheck, optional]

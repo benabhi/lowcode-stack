@@ -1,0 +1,22 @@
+# ==============================================================================
+# Role: docmost - Metadata
+# ==============================================================================
+
+---
+galaxy_info:
+  author: lowcode-stack
+  description: Docmost documentation platform deployment for lowcode-stack (optional)
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+  galaxy_tags:
+    - docmost
+    - documentation
+    - wiki
+    - docker
+    - optional
+
+dependencies: []

@@ -21,7 +21,7 @@
     group: root
     mode: '0644'
   become: true
-  loop: "{{ nginx_sites }}"
+  loop: "{{ nginx_all_sites }}"
   notify: Reload nginx
 
 - name: Ensure sites are enabled
@@ -30,7 +30,7 @@
     dest: "/etc/nginx/sites-enabled/{{ item.name }}"
     state: link
   become: true
-  loop: "{{ nginx_sites }}"
+  loop: "{{ nginx_all_sites }}"
   notify: Reload nginx
 
 - name: Test Nginx configuration
@@ -52,4 +52,4 @@
 
 - name: Display deployment summary
   ansible.builtin.debug:
-    msg: "Nginx: configured ({{ nginx_sites | map(attribute='domain') | join(', ') }})"
+    msg: "Nginx: configured ({{ nginx_all_sites | map(attribute='domain') | join(', ') }})"

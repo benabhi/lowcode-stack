@@ -1,0 +1,1590 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{parskip}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+\geometry{margin=2.5cm}
+
+% Configuración de colores
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Configuración de listings
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single
+}
+\lstset{style=mystyle}
+
+% Configuración de encabezados
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{CENT 40 - Propuesta Stack Low-Code}
+\lhead{Documento Técnico Institucional}
+\cfoot{\thepage}
+
+% Configuración de hipervínculos
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdftitle={Propuesta Stack Low-Code CENT 40},
+    pdfauthor={CENT 40},
+}
+
+\title{
+    \vspace{-2cm}
+    \textbf{Propuesta de Implementación de Stack Low-Code Institucional}\\[0.5cm]
+    \large Centro Educativo de Nivel Terciario N° 40\\[0.3cm]
+    \normalsize Documento Técnico para Evaluación y Adopción\\[0.3cm]
+    \small Plataforma para el Desarrollo de Soluciones Informáticas
+}
+\author{Área de Tecnología e Innovación Educativa}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\vspace{1cm}
+
+\begin{abstract}
+El presente documento constituye una propuesta técnica exhaustiva para la evaluación e implementación de un stack tecnológico basado en herramientas low-code en el Instituto CENT 40. La propuesta aborda tanto el uso educativo de estas tecnologías para la formación de alumnos, como su aplicación práctica en el desarrollo de soluciones informáticas institucionales de diversa índole: sistemas de gestión, aplicaciones web, automatizaciones, portales internos y cualquier otra necesidad tecnológica que pueda surgir. Se fundamenta la elección de cada componente tecnológico, se detallan las integraciones, se justifica pedagógicamente el enfoque y se presenta un análisis honesto de ventajas y limitaciones.
+\end{abstract}
+
+\vspace{1cm}
+
+\section*{Resumen Ejecutivo}
+
+\textbf{¿Qué es?} Un conjunto integrado de herramientas de código abierto que permite desarrollar aplicaciones web de forma visual y rápida, sin necesidad de programación tradicional compleja.
+
+\vspace{0.5cm}
+
+\textbf{Beneficios clave para el CENT 40:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Sin costos de licencia}: Todas las herramientas son open source
+    \item \textbf{Control total de datos}: Alojado en infraestructura propia del instituto
+    \item \textbf{Doble propósito}: Herramienta educativa para alumnos + soluciones institucionales reales
+    \item \textbf{Proyectos terminables}: Resultados funcionales en plazos académicos realistas
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Componentes principales:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Supabase}: Base de datos PostgreSQL + autenticación + almacenamiento
+    \item \textbf{Appsmith}: Construcción visual de interfaces de usuario
+    \item \textbf{n8n}: Automatización de procesos y creación de APIs
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Requisitos mínimos:} Un servidor VPS con 4 cores, 8GB RAM y 100GB de almacenamiento SSD. Costo estimado: \$20-40 USD mensuales.
+
+\newpage
+\tableofcontents
+\newpage
+
+% ==============================================================================
+% SECCIÓN 1: INTRODUCCIÓN Y CONTEXTO
+% ==============================================================================
+\section{Introducción y Contexto Institucional}
+
+\subsection{Situación Actual y Problemática}
+
+El Instituto CENT 40 enfrenta un desafío común en la educación técnica terciaria: la brecha entre las expectativas curriculares de desarrollo de software y las capacidades reales que los estudiantes pueden alcanzar en los plazos académicos establecidos.
+
+Los alumnos que ingresan a las carreras técnicas frecuentemente carecen del conocimiento profundo necesario para desarrollar sistemas complejos desde cero. El desarrollo tradicional de software (full-code) requiere dominio simultáneo de múltiples disciplinas:
+
+\begin{itemize}
+    \item \textbf{Backend}: Lenguajes de programación, frameworks, arquitecturas, patrones de diseño
+    \item \textbf{Frontend}: HTML, CSS, JavaScript, frameworks modernos, diseño responsive
+    \item \textbf{Base de datos}: Modelado, SQL, optimización, migraciones
+    \item \textbf{Infraestructura}: Servidores, redes, seguridad, despliegue
+    \item \textbf{DevOps}: Control de versiones, CI/CD, contenedores, orquestación
+\end{itemize}
+
+Esperar que un estudiante domine todas estas áreas en 2-3 años de carrera, mientras simultáneamente desarrolla proyectos funcionales de complejidad real, es una expectativa que rara vez se cumple satisfactoriamente.
+
+\subsection{La Propuesta Low-Code como Solución}
+
+El enfoque low-code no implica ``programar menos'' o ``programar mal''. Representa una \textbf{abstracción inteligente} que permite:
+
+\begin{enumerate}
+    \item Reducir drásticamente los tiempos de desarrollo
+    \item Enfocarse en la lógica de negocio antes que en la infraestructura
+    \item Comprender visualmente flujos y procesos complejos
+    \item Introducir código real (JavaScript, SQL) de forma progresiva y contextualizada
+    \item Producir soluciones funcionales en plazos académicos realistas
+\end{enumerate}
+
+\subsection{Objetivos del Documento}
+
+Este documento tiene como objetivos:
+
+\begin{enumerate}
+    \item Presentar un stack tecnológico low-code coherente y probado
+    \item Fundamentar técnica y pedagógicamente cada elección
+    \item Demostrar la viabilidad de implementación institucional
+    \item Ilustrar casos de uso representativos para el contexto educativo
+    \item Establecer una hoja de ruta para la adopción gradual
+\end{enumerate}
+
+\subsection{Adopción en la Industria}
+
+Las herramientas que componen este stack no son experimentales: son soluciones maduras utilizadas por organizaciones de diversos tamaños alrededor del mundo.
+
+\begin{description}
+    \item[Supabase] Más de 1 millón de bases de datos creadas. Utilizado por empresas como Mozilla, PwC, y miles de startups tecnológicas. Respaldado por inversores de renombre como Y Combinator, con más de 100 millones de dólares en financiamiento.
+
+    \item[Appsmith] Más de 10 millones de descargas y 30,000 estrellas en GitHub. Utilizado por organizaciones como Intercom, Swiggy, y equipos internos de múltiples empresas Fortune 500 para construir herramientas internas.
+
+    \item[n8n] Utilizado por equipos de automatización en empresas como Philips, Spendesk, y cientos de agencias digitales. Más de 400 integraciones disponibles con servicios populares.
+\end{description}
+
+Estas herramientas cuentan con comunidades activas, actualizaciones frecuentes (releases mensuales), documentación extensa, y soporte profesional disponible si fuera necesario.
+
+% ==============================================================================
+% SECCIÓN 2: STACK TECNOLÓGICO PROPUESTO
+% ==============================================================================
+\section{Stack Tecnológico Propuesto}
+
+El stack propuesto se compone de herramientas de código abierto, maduras y con comunidades activas. Todas pueden ser auto-hospedadas (self-hosted), lo que garantiza control total sobre los datos institucionales y elimina dependencias de servicios externos de pago.
+
+\subsection{Visión General del Stack}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Componente} & \textbf{Función} & \textbf{Tecnología Base} \\
+\midrule
+Supabase & Backend as a Service & PostgreSQL, GoTrue \\
+Appsmith & Frontend Low-Code & React, Node.js \\
+n8n & Automatización y APIs & Node.js \\
+Redis & Cache y Colas & Redis \\
+Nginx & Reverse Proxy & Nginx \\
+Docker & Contenedores & Docker Engine \\
+Ansible & Automatización & Python \\
+\bottomrule
+\end{tabular}
+\caption{Componentes del Stack Low-Code Propuesto}
+\end{table}
+
+\subsection{¿Por Qué Estas Herramientas?}
+
+Existen múltiples alternativas en el mercado low-code. La selección de este stack específico responde a criterios fundamentales para un contexto educativo e institucional:
+
+\subsubsection{Supabase vs Firebase (Google)}
+
+\begin{itemize}
+    \item Firebase requiere cuenta de Google y aloja datos en servidores de Estados Unidos
+    \item Supabase es 100\% auto-hospedable: los datos permanecen en el servidor del instituto
+    \item PostgreSQL es un estándar de la industria con décadas de madurez; Firebase usa una base de datos propietaria (Firestore)
+    \item Sin límites artificiales de uso ni costos sorpresa por exceso de consultas
+\end{itemize}
+
+\subsubsection{Appsmith vs Retool / Budibase}
+
+\begin{itemize}
+    \item Retool tiene versión gratuita limitada a 5 usuarios, insuficiente para uso institucional
+    \item Appsmith es completamente open source sin restricciones de usuarios ni funcionalidades
+    \item Comunidad activa con más de 30,000 estrellas en GitHub
+    \item Integración nativa y documentada con PostgreSQL/Supabase
+\end{itemize}
+
+\subsubsection{n8n vs Zapier / Make (Integromat)}
+
+\begin{itemize}
+    \item Zapier y Make cobran por cada ejecución de workflow (desde \$20/mes por 750 tareas)
+    \item n8n auto-hospedado permite ejecuciones ilimitadas sin costo adicional
+    \item Código abierto y extensible: se pueden crear nodos personalizados
+    \item Ideal para aprendizaje: los estudiantes pueden ver el código fuente de cada nodo
+\end{itemize}
+
+\subsection{Supabase - Backend as a Service}
+
+\subsubsection{Descripción y Propósito}
+
+Supabase es una plataforma de backend de código abierto que proporciona una alternativa auto-hospedable a Firebase. Ofrece un conjunto integrado de servicios que tradicionalmente requerirían múltiples herramientas y configuraciones complejas.
+
+\subsubsection{Componentes Principales}
+
+\begin{description}
+    \item[PostgreSQL] Base de datos relacional robusta con soporte para JSON, búsqueda full-text y extensiones avanzadas.
+    \item[GoTrue] Sistema de autenticación que soporta email/password, OAuth, magic links y autenticación de dos factores.
+    \item[PostgREST] API REST automática generada a partir del esquema de la base de datos.
+    \item[Realtime] Suscripciones en tiempo real a cambios en la base de datos via WebSockets.
+    \item[Storage] Almacenamiento de archivos con políticas de acceso basadas en roles.
+    \item[Edge Functions] Funciones serverless escritas en TypeScript/JavaScript.
+\end{description}
+
+\subsubsection{Problema que Resuelve}
+
+En un desarrollo tradicional, configurar autenticación, base de datos, APIs y almacenamiento requiere semanas de trabajo y conocimiento especializado. Supabase reduce esto a horas, proporcionando:
+
+\begin{itemize}
+    \item API REST automática sin escribir código backend
+    \item Autenticación lista para producción
+    \item Panel de administración visual para la base de datos
+    \item Row Level Security (RLS) para seguridad a nivel de fila
+\end{itemize}
+
+\subsubsection{Nivel de Código Introducido}
+
+\begin{itemize}
+    \item \textbf{SQL}: Creación de tablas, consultas, vistas, funciones, triggers
+    \item \textbf{JavaScript/TypeScript}: Edge Functions para lógica personalizada
+    \item \textbf{Políticas RLS}: Expresiones SQL para control de acceso
+\end{itemize}
+
+\subsubsection{Casos de Uso en el Instituto}
+
+\begin{enumerate}
+    \item Base de datos centralizada para cualquier sistema institucional
+    \item Autenticación unificada de usuarios (alumnos, docentes, administrativos)
+    \item Almacenamiento de documentos y archivos
+    \item APIs automáticas para consulta de datos desde otras aplicaciones
+\end{enumerate}
+
+\subsubsection{Ventajas y Desventajas}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{7cm}p{7cm}@{}}
+\toprule
+\textbf{Ventajas} & \textbf{Desventajas} \\
+\midrule
+API automática sin código & Curva de aprendizaje inicial \\
+Autenticación robusta incluida & Requiere conocimiento de SQL \\
+Tiempo real nativo & Documentación en inglés \\
+100\% código abierto & Complejidad de auto-hospedaje \\
+Compatible con estándares SQL & Múltiples servicios a mantener \\
+\bottomrule
+\end{tabular}
+\caption{Análisis de Supabase}
+\end{table}
+
+\subsection{Appsmith - Frontend Low-Code}
+
+\subsubsection{Descripción y Propósito}
+
+Appsmith es una plataforma de código abierto para construir aplicaciones internas y paneles administrativos mediante una interfaz visual de arrastrar y soltar. Permite crear interfaces de usuario conectadas a múltiples fuentes de datos sin escribir código frontend tradicional.
+
+\subsubsection{Características Principales}
+
+\begin{itemize}
+    \item Editor visual drag-and-drop
+    \item Más de 45 widgets prediseñados (tablas, formularios, gráficos, etc.)
+    \item Conexión nativa a bases de datos (PostgreSQL, MySQL, MongoDB)
+    \item Integración con APIs REST y GraphQL
+    \item Sistema de bindings para enlazar datos a componentes
+    \item JavaScript embebido para lógica personalizada
+    \item Control de acceso basado en roles
+    \item Versionado y colaboración en equipo
+\end{itemize}
+
+\subsubsection{Problema que Resuelve}
+
+El desarrollo frontend tradicional requiere dominio de HTML, CSS, JavaScript y frameworks modernos como React o Vue. Este conocimiento toma años en adquirirse. Appsmith permite:
+
+\begin{itemize}
+    \item Crear interfaces funcionales en horas, no semanas
+    \item Conectar visualmente a fuentes de datos
+    \item Iterar rápidamente sobre diseños
+    \item Enfocarse en la experiencia del usuario, no en la implementación técnica
+\end{itemize}
+
+\subsubsection{Nivel de Código Introducido}
+
+\begin{itemize}
+    \item \textbf{JavaScript}: Transformaciones de datos, validaciones, lógica condicional
+    \item \textbf{Bindings}: Expresiones tipo \texttt{\{\{query.data\}\}} para enlazar datos
+    \item \textbf{SQL}: Consultas directas a bases de datos conectadas
+\end{itemize}
+
+\subsubsection{Ejemplo de Código en Appsmith}
+
+\begin{lstlisting}[language=JavaScript, caption=Ejemplo de transformación de datos en Appsmith]
+// Filtrar registros activos y formatear datos
+{{
+  usuariosQuery.data
+    .filter(usuario => usuario.estado === 'activo')
+    .map(usuario => ({
+      ...usuario,
+      nombreCompleto: `${usuario.apellido}, ${usuario.nombre}`,
+      fechaFormateada: new Date(usuario.fecha_registro).toLocaleDateString()
+    }))
+}}
+\end{lstlisting}
+
+\subsubsection{Casos de Uso en el Instituto}
+
+\begin{enumerate}
+    \item Paneles administrativos para gestión de datos
+    \item Portales de consulta para diferentes tipos de usuarios
+    \item Dashboards con indicadores y métricas en tiempo real
+    \item Formularios de registro y seguimiento de procesos
+    \item Reportes y estadísticas institucionales
+\end{enumerate}
+
+\subsubsection{Ventajas y Desventajas}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{7cm}p{7cm}@{}}
+\toprule
+\textbf{Ventajas} & \textbf{Desventajas} \\
+\midrule
+Desarrollo visual rápido & Limitado para apps públicas complejas \\
+Sin necesidad de HTML/CSS & Personalización visual restringida \\
+Conexión directa a BD & Rendimiento en datasets grandes \\
+JavaScript para lógica & Dependencia del ecosistema \\
+Auto-hospedable & Curva de aprendizaje de bindings \\
+\bottomrule
+\end{tabular}
+\caption{Análisis de Appsmith}
+\end{table}
+
+\subsection{n8n - Automatización y Creación de APIs}
+
+\subsubsection{Descripción y Propósito}
+
+n8n es una herramienta de automatización de workflows de código abierto que permite conectar servicios, automatizar tareas y crear APIs mediante una interfaz visual de nodos. Es comparable a Zapier o Make, pero auto-hospedable y extensible.
+
+\subsubsection{Características Principales}
+
+\begin{itemize}
+    \item Editor visual de workflows basado en nodos
+    \item Más de 400 integraciones predefinidas
+    \item Triggers (disparadores) por webhook, schedule, eventos
+    \item Nodos de código para JavaScript/Python personalizado
+    \item Manejo de errores y reintentos automáticos
+    \item Versionado de workflows
+    \item API REST automática por workflow
+    \item Ejecución paralela y condicional
+\end{itemize}
+
+\subsubsection{Problema que Resuelve}
+
+La creación de APIs y la automatización de procesos tradicionalmente requieren:
+
+\begin{itemize}
+    \item Conocimiento profundo de programación backend
+    \item Configuración de servidores y endpoints
+    \item Manejo de autenticación y errores
+    \item Integración manual con servicios externos
+\end{itemize}
+
+n8n abstrae toda esta complejidad en un flujo visual donde cada nodo representa una operación. Los estudiantes pueden:
+
+\begin{itemize}
+    \item Visualizar el flujo de datos entre sistemas
+    \item Entender la lógica de integración sin código complejo
+    \item Crear APIs funcionales arrastrando nodos
+    \item Introducir código JavaScript gradualmente
+\end{itemize}
+
+\subsubsection{Nivel de Código Introducido}
+
+\begin{itemize}
+    \item \textbf{JavaScript}: Nodos Code para transformaciones personalizadas
+    \item \textbf{Expresiones}: Sintaxis \texttt{\$json.campo} para acceso a datos
+    \item \textbf{JSON}: Estructuración de datos de entrada/salida
+\end{itemize}
+
+\subsubsection{Ejemplo de Workflow}
+
+\begin{lstlisting}[caption=Ejemplo de nodo Code en n8n]
+// Nodo Code: Calcular totales de registros
+const registros = $input.all();
+
+const total = registros.reduce((sum, item) => {
+  return sum + item.json.valor;
+}, 0);
+
+return [{
+  json: {
+    usuario_id: registros[0].json.usuario_id,
+    total: Math.round(total * 100) / 100,
+    cantidad_registros: registros.length,
+    fecha_calculo: new Date().toISOString()
+  }
+}];
+\end{lstlisting}
+
+\subsubsection{Casos de Uso en el Instituto}
+
+\begin{enumerate}
+    \item \textbf{API de consultas}: Endpoints personalizados para cualquier necesidad
+    \item \textbf{Notificaciones}: Envío automático de emails ante eventos del sistema
+    \item \textbf{Sincronización}: Integración con sistemas externos y servicios de terceros
+    \item \textbf{Reportes}: Generación automática de informes periódicos
+    \item \textbf{Validaciones}: Verificación y procesamiento de datos antes de su registro
+\end{enumerate}
+
+\subsubsection{Valor Pedagógico de n8n}
+
+n8n merece mención especial por su valor pedagógico excepcional:
+
+\begin{enumerate}
+    \item \textbf{Visualización de flujos}: Los estudiantes pueden ``ver'' cómo fluyen los datos entre sistemas, algo imposible de percibir en código tradicional.
+
+    \item \textbf{Comprensión de APIs}: Al crear y consumir APIs visualmente, se internalizan conceptos como endpoints, métodos HTTP, headers y payloads.
+
+    \item \textbf{Debugging visual}: Los errores se muestran en el nodo específico que falla, facilitando la identificación y corrección.
+
+    \item \textbf{Progresión natural}: Se comienza con nodos predefinidos y gradualmente se introducen nodos de código personalizado.
+\end{enumerate}
+
+\subsubsection{Ventajas y Desventajas}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{7cm}p{7cm}@{}}
+\toprule
+\textbf{Ventajas} & \textbf{Desventajas} \\
+\midrule
+Visualización excepcional & Limitado para lógica muy compleja \\
++400 integraciones & Consumo de memoria en workflows grandes \\
+Código abierto y extensible & Documentación dispersa \\
+API automática por workflow & Requiere Node.js actualizado \\
+Ideal para aprendizaje & Versionado limitado en plan free \\
+\bottomrule
+\end{tabular}
+\caption{Análisis de n8n}
+\end{table}
+
+\subsection{Redis - Cache y Soporte de Rendimiento}
+
+\subsubsection{Descripción y Propósito}
+
+Redis es un almacén de estructuras de datos en memoria, utilizado como base de datos, caché y broker de mensajes. En el contexto del stack propuesto, Redis proporciona soporte crítico para rendimiento y funcionalidades avanzadas.
+
+\subsubsection{Funciones en el Stack}
+
+\begin{description}
+    \item[Cache de consultas] Almacena resultados de consultas frecuentes para reducir carga en PostgreSQL.
+    \item[Sesiones de usuario] Manejo eficiente de sesiones activas.
+    \item[Colas de trabajo] Soporte para n8n en procesamiento de workflows.
+    \item[Pub/Sub] Comunicación en tiempo real entre servicios.
+    \item[Rate limiting] Control de límites de solicitudes.
+\end{description}
+
+\subsubsection{Nivel de Código Introducido}
+
+Redis introduce conceptos importantes de programación:
+
+\begin{itemize}
+    \item Estructuras de datos (strings, hashes, lists, sets)
+    \item Comandos básicos (GET, SET, HGET, LPUSH)
+    \item TTL (Time To Live) para expiración de datos
+    \item Patrones de cache (cache-aside, write-through)
+\end{itemize}
+
+\subsubsection{Ventajas y Desventajas}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{7cm}p{7cm}@{}}
+\toprule
+\textbf{Ventajas} & \textbf{Desventajas} \\
+\midrule
+Extremadamente rápido & Datos en memoria (volátil) \\
+Múltiples estructuras de datos & Requiere gestión de memoria \\
+Soporte nativo en n8n & Complejidad adicional \\
+Persistencia opcional & Curva de aprendizaje \\
+\bottomrule
+\end{tabular}
+\caption{Análisis de Redis}
+\end{table}
+
+\subsection{Nginx - Reverse Proxy y Seguridad}
+
+\subsubsection{Descripción y Propósito}
+
+Nginx actúa como punto de entrada único al stack, manejando el enrutamiento de solicitudes, terminación SSL, balanceo de carga y seguridad básica.
+
+\subsubsection{Funciones en el Stack}
+
+\begin{enumerate}
+    \item \textbf{Reverse Proxy}: Enruta solicitudes a los servicios internos según el dominio o ruta.
+    \item \textbf{SSL/TLS}: Termina conexiones HTTPS con certificados Let's Encrypt.
+    \item \textbf{Seguridad}: Headers de seguridad, rate limiting, protección básica.
+    \item \textbf{Cache estático}: Sirve archivos estáticos eficientemente.
+\end{enumerate}
+
+\subsubsection{Configuración Tipo}
+
+\begin{lstlisting}[caption=Ejemplo de configuración Nginx para el stack]
+# Supabase Studio
+server {
+    listen 443 ssl;
+    server_name supabase.instituto.edu.ar;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+# Appsmith
+server {
+    listen 443 ssl;
+    server_name apps.instituto.edu.ar;
+
+    location / {
+        proxy_pass http://127.0.0.1:8081;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# n8n
+server {
+    listen 443 ssl;
+    server_name api.instituto.edu.ar;
+
+    location / {
+        proxy_pass http://127.0.0.1:5678;
+    }
+}
+\end{lstlisting}
+
+\subsection{Docker y Docker Compose - Contenedores}
+
+\subsubsection{Descripción y Propósito}
+
+Docker permite empaquetar aplicaciones y sus dependencias en contenedores aislados y reproducibles. Docker Compose orquesta múltiples contenedores como un sistema unificado.
+
+\subsubsection{Beneficios para el Instituto}
+
+\begin{enumerate}
+    \item \textbf{Reproducibilidad}: El mismo entorno en desarrollo, pruebas y producción.
+    \item \textbf{Aislamiento}: Cada servicio en su contenedor sin conflictos.
+    \item \textbf{Portabilidad}: Migración sencilla entre servidores.
+    \item \textbf{Versionado}: Control de versiones de la infraestructura.
+    \item \textbf{Escalabilidad}: Facilidad para escalar servicios individualmente.
+\end{enumerate}
+
+\subsubsection{Nivel de Código Introducido}
+
+\begin{itemize}
+    \item \textbf{YAML}: Archivos docker-compose.yml
+    \item \textbf{Dockerfile}: Construcción de imágenes personalizadas
+    \item \textbf{Shell}: Comandos de gestión de contenedores
+\end{itemize}
+
+\subsection{Ansible - Automatización de Infraestructura}
+
+\subsubsection{Descripción y Propósito}
+
+Ansible es una herramienta de automatización que permite definir la infraestructura como código. Gestiona la instalación, configuración y mantenimiento del stack de forma declarativa y repetible.
+
+\subsubsection{Funciones en el Proyecto}
+
+\begin{enumerate}
+    \item \textbf{Aprovisionamiento}: Instalación inicial de todo el stack.
+    \item \textbf{Configuración}: Ajuste de parámetros y secretos.
+    \item \textbf{Actualizaciones}: Despliegue de nuevas versiones.
+    \item \textbf{Mantenimiento}: Backups, rotación de logs, limpieza.
+    \item \textbf{Documentación viva}: El código Ansible documenta la infraestructura.
+\end{enumerate}
+
+\subsubsection{Nivel de Código Introducido}
+
+\begin{itemize}
+    \item \textbf{YAML}: Playbooks y configuración
+    \item \textbf{Jinja2}: Templates para archivos de configuración
+    \item \textbf{Shell}: Comandos de sistema cuando es necesario
+\end{itemize}
+
+\subsubsection{Ejemplo de Playbook}
+
+\begin{lstlisting}[language=Python, caption=Ejemplo de tarea Ansible]
+- name: Deploy Low-Code Stack
+  hosts: lowcode_servers
+  become: true
+
+  roles:
+    - role: secrets      # Genera credenciales
+    - role: common       # Configura sistema base
+    - role: docker       # Instala Docker
+    - role: redis        # Despliega Redis
+    - role: supabase     # Despliega Supabase
+    - role: appsmith     # Despliega Appsmith
+    - role: n8n          # Despliega n8n
+    - role: nginx        # Configura proxy
+\end{lstlisting}
+
+% ==============================================================================
+% SECCIÓN 3: INTEGRACIÓN DE COMPONENTES
+% ==============================================================================
+\section{Integración de Componentes}
+
+\subsection{Arquitectura General}
+
+El stack funciona como un sistema integrado donde cada componente cumple un rol específico. La Figura \ref{fig:arquitectura} presenta una visión general de la arquitectura.
+
+% Definición de colores para el diagrama
+\definecolor{nginxcolor}{RGB}{0, 128, 0}
+\definecolor{appsmithcolor}{RGB}{255, 107, 53}
+\definecolor{n8ncolor}{RGB}{234, 76, 137}
+\definecolor{supabasecolor}{RGB}{62, 207, 142}
+\definecolor{rediscolor}{RGB}{220, 53, 69}
+\definecolor{dockercolor}{RGB}{33, 150, 243}
+\definecolor{usercolor}{RGB}{100, 100, 100}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    scale=0.85,
+    transform shape,
+    node distance=0.7cm and 0.3cm,
+    every node/.style={font=\sffamily},
+    box/.style={rectangle, draw, rounded corners=3pt, minimum width=3cm, minimum height=1.6cm, align=center, thick},
+    nginx/.style={box, fill=nginxcolor!20, draw=nginxcolor!70, minimum width=10.5cm, minimum height=1cm},
+    service/.style={box, minimum width=3cm, minimum height=1.8cm},
+    redis/.style={box, fill=rediscolor!15, draw=rediscolor!70, minimum width=3.2cm, minimum height=0.9cm},
+    cloud/.style={ellipse, draw=usercolor, fill=usercolor!10, minimum width=3cm, minimum height=0.9cm, thick},
+    arrow/.style={-{Stealth[length=2.5mm]}, thick, draw=gray!70},
+    doublearrow/.style={<->, thick, draw=gray!50, dashed}
+]
+
+% Usuario/Internet
+\node[cloud] (internet) {\textbf{Internet / Usuarios}};
+
+% Nginx
+\node[nginx, below=0.5cm of internet] (nginx) {
+    \textbf{NGINX} -- \footnotesize Reverse Proxy, SSL, Routing
+};
+
+% Servicios principales
+\node[service, fill=appsmithcolor!15, draw=appsmithcolor!70, below left=0.7cm and 1.5cm of nginx] (appsmith) {
+    \textbf{Appsmith}\\[2pt]
+    \scriptsize Frontend Low-Code\\
+    \scriptsize \textit{Interfaces}
+};
+
+\node[service, fill=n8ncolor!15, draw=n8ncolor!70, below=0.7cm of nginx] (n8n) {
+    \textbf{n8n}\\[2pt]
+    \scriptsize Lógica \& APIs\\
+    \scriptsize \textit{Workflows}
+};
+
+\node[service, fill=supabasecolor!15, draw=supabasecolor!70, below right=0.7cm and 1.5cm of nginx] (supabase) {
+    \textbf{Supabase}\\[2pt]
+    \scriptsize Backend \& DB\\
+    \scriptsize \textit{PostgreSQL}
+};
+
+% Redis
+\node[redis, below=0.7cm of n8n] (redis) {
+    \textbf{Redis} \scriptsize Cache
+};
+
+% Contenedor Docker (fondo)
+\begin{scope}[on background layer]
+    \node[draw=dockercolor, fill=dockercolor!5, rounded corners=6pt, dashed, thick,
+          fit=(appsmith)(n8n)(supabase)(redis), inner sep=10pt,
+          label={[font=\scriptsize\sffamily, text=dockercolor]below:Docker Containers}] (docker) {};
+\end{scope}
+
+% Flechas principales
+\draw[arrow] (internet) -- (nginx);
+\draw[arrow] (nginx) -- (appsmith);
+\draw[arrow] (nginx) -- (n8n);
+\draw[arrow] (nginx) -- (supabase);
+
+% Conexiones entre servicios
+\draw[doublearrow] (appsmith) -- (n8n);
+\draw[doublearrow] (n8n) -- (supabase);
+\draw[arrow] (n8n) -- (redis);
+
+\end{tikzpicture}
+\caption{Arquitectura general del ecosistema Low-Code}
+\label{fig:arquitectura}
+\end{figure}
+
+\textbf{Características de la arquitectura}:
+\begin{itemize}[noitemsep]
+    \item Las líneas punteadas indican comunicación bidireccional entre servicios
+    \item Todos los servicios corren en contenedores Docker aislados
+    \item Nginx es el único punto de entrada desde Internet (SSL/TLS)
+\end{itemize}
+
+\subsection{Flujos de Datos}
+
+Los siguientes flujos son \textbf{ejemplos ilustrativos} de cómo interactuarían los componentes del stack en escenarios típicos. No representan implementaciones concretas, sino patrones de integración posibles que se pueden adaptar a cualquier necesidad institucional.
+
+\subsubsection{Flujo 1: Consulta de Datos por Usuario}
+
+\begin{enumerate}
+    \item El usuario accede a \texttt{apps.instituto.edu.ar} (Appsmith)
+    \item Appsmith autentica contra Supabase Auth
+    \item Appsmith consulta la API de n8n: \texttt{api.instituto.edu.ar/datos}
+    \item n8n verifica el token JWT contra Supabase
+    \item n8n consulta PostgreSQL (vía Supabase) con el ID del usuario
+    \item n8n formatea la respuesta y la devuelve
+    \item Appsmith renderiza los datos en una tabla o componente visual
+\end{enumerate}
+
+\subsubsection{Flujo 2: Registro de Información con Notificación}
+
+\begin{enumerate}
+    \item El usuario autorizado accede al panel de gestión (Appsmith)
+    \item Completa un formulario de registro
+    \item Appsmith envía POST a \texttt{api.instituto.edu.ar/registros}
+    \item n8n valida los datos y permisos del usuario
+    \item n8n inserta en PostgreSQL vía Supabase
+    \item n8n dispara workflow de notificación
+    \item Los usuarios afectados reciben email informativo
+    \item n8n retorna confirmación a Appsmith
+    \item Appsmith muestra mensaje de éxito
+\end{enumerate}
+
+\subsubsection{Flujo 3: Generación de Reporte Automático}
+
+\begin{enumerate}
+    \item Trigger programado en n8n (ej: cada lunes 8:00)
+    \item n8n consulta estadísticas del período deseado
+    \item n8n genera PDF con la información
+    \item n8n sube el PDF a Supabase Storage
+    \item n8n envía email a los destinatarios configurados
+    \item El reporte queda disponible en Appsmith
+\end{enumerate}
+
+\subsection{Comunicación entre Servicios}
+
+Todos los servicios se comunican dentro de una red Docker privada:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Servicio} & \textbf{Hostname Interno} & \textbf{Puerto} & \textbf{Protocolo} \\
+\midrule
+Supabase API & supabase-kong & 8000 & HTTP \\
+Supabase DB & supabase-db & 5432 & PostgreSQL \\
+Supabase Studio & supabase-studio & 3000 & HTTP \\
+Appsmith & lowcode-appsmith & 80 & HTTP \\
+n8n & lowcode-n8n & 5678 & HTTP \\
+Redis & lowcode-redis & 6379 & Redis \\
+\bottomrule
+\end{tabular}
+\caption{Hostnames internos para comunicación entre servicios}
+\end{table}
+
+% ==============================================================================
+% SECCIÓN 4: JUSTIFICACIÓN PEDAGÓGICA
+% ==============================================================================
+\section{Justificación Pedagógica}
+
+\subsection{El Problema del Desarrollo Tradicional en Educación}
+
+El desarrollo de software tradicional presenta barreras significativas para estudiantes en formación:
+
+\begin{enumerate}
+    \item \textbf{Complejidad inicial abrumadora}: Antes de escribir ``Hola Mundo'' en una aplicación web moderna, el estudiante debe entender servidores, rutas, templates, bases de datos, etc.
+
+    \item \textbf{Frustración temprana}: La cantidad de errores técnicos (configuración, dependencias, versiones) supera ampliamente los errores lógicos que deberían ser el foco de aprendizaje.
+
+    \item \textbf{Proyectos inconclusos}: La mayoría de los proyectos académicos ambiciosos quedan incompletos por falta de tiempo o conocimiento.
+
+    \item \textbf{Brecha teoría-práctica}: Se enseñan conceptos que no pueden aplicarse en proyectos reales dentro del período académico.
+\end{enumerate}
+
+\subsection{Cómo el Stack Low-Code Resuelve Estos Problemas}
+
+\subsubsection{Reducción de la Complejidad Accidental}
+
+La ``complejidad accidental'' es aquella que no es inherente al problema sino a las herramientas utilizadas. El stack low-code elimina gran parte de esta complejidad:
+
+\begin{itemize}
+    \item No es necesario configurar servidores desde cero
+    \item La autenticación viene resuelta
+    \item Las APIs se generan automáticamente
+    \item El frontend se construye visualmente
+\end{itemize}
+
+Esto permite enfocarse en la ``complejidad esencial'': la lógica del negocio, el modelado de datos, los flujos de proceso.
+
+\subsubsection{Visualización de Conceptos Abstractos}
+
+n8n en particular permite \textbf{ver} conceptos que tradicionalmente son abstractos:
+
+\begin{itemize}
+    \item El flujo de datos entre sistemas
+    \item La estructura de una API (request/response)
+    \item El manejo de errores y excepciones
+    \item La lógica condicional y los bucles
+    \item Las transformaciones de datos
+\end{itemize}
+
+\subsubsection{Introducción Progresiva de Código}
+
+El stack permite una curva de aprendizaje gradual:
+
+\begin{enumerate}
+    \item \textbf{Nivel 1 - Sin código}: Uso de nodos predefinidos, conexiones visuales, configuración de parámetros.
+
+    \item \textbf{Nivel 2 - Expresiones}: Introducción de sintaxis tipo \texttt{\{\{dato.campo\}\}} para acceder a datos.
+
+    \item \textbf{Nivel 3 - JavaScript básico}: Transformaciones simples, filtros, mapeos.
+
+    \item \textbf{Nivel 4 - SQL}: Consultas personalizadas, joins, agregaciones.
+
+    \item \textbf{Nivel 5 - Código avanzado}: Edge Functions, nodos Code complejos, integraciones personalizadas.
+\end{enumerate}
+
+\subsection{Competencias Desarrolladas}
+
+El trabajo con este stack desarrolla competencias directamente aplicables en el mercado laboral:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Competencia} & \textbf{Herramienta Principal} \\
+\midrule
+Modelado de datos & Supabase / PostgreSQL \\
+Diseño de APIs & n8n \\
+Diseño de interfaces & Appsmith \\
+Automatización de procesos & n8n \\
+Gestión de infraestructura & Docker / Ansible \\
+Seguridad básica & Supabase Auth / Nginx \\
+Pensamiento sistémico & Integración del stack \\
+Resolución de problemas & Debugging visual en n8n \\
+\bottomrule
+\end{tabular}
+\caption{Competencias y herramientas asociadas}
+\end{table}
+
+\subsection{Proyectos Realistas y Terminables}
+
+Una ventaja fundamental del enfoque low-code es que los proyectos pueden completarse en los plazos académicos. Un sistema que tomaría 6-12 meses en desarrollo tradicional puede completarse en 2-3 meses con el stack propuesto.
+
+Esto tiene impacto directo en:
+
+\begin{itemize}
+    \item \textbf{Motivación}: Los estudiantes ven resultados tangibles
+    \item \textbf{Portfolio}: Proyectos completos para mostrar
+    \item \textbf{Aprendizaje}: Ciclo completo de desarrollo experimentado
+    \item \textbf{Confianza}: Capacidad demostrada de entregar soluciones
+\end{itemize}
+
+% ==============================================================================
+% SECCIÓN 5: CASOS DE USO Y APLICACIONES POTENCIALES
+% ==============================================================================
+\section{Casos de Uso y Aplicaciones Potenciales}
+
+\subsection{Versatilidad del Stack}
+
+El stack low-code propuesto no está limitado a un tipo específico de aplicación. Su arquitectura flexible permite desarrollar prácticamente cualquier solución web que el instituto pueda necesitar, desde sistemas de gestión internos hasta portales públicos de información.
+
+\textbf{Nota importante}: Los ejemplos presentados en esta sección son ilustrativos y demuestran el potencial del stack. Cada proyecto real requerirá su propio análisis y diseño específico.
+
+\subsection{Tipos de Aplicaciones Posibles}
+
+Con este stack se pueden desarrollar, entre otras:
+
+\begin{itemize}
+    \item \textbf{Sistemas de gestión}: Control de inventario, seguimiento de equipamiento, gestión de espacios
+    \item \textbf{Portales informativos}: Sitios web institucionales, tableros de anuncios, calendarios de eventos
+    \item \textbf{Aplicaciones administrativas}: Gestión de trámites, seguimiento de solicitudes, control de documentación
+    \item \textbf{Herramientas educativas}: Repositorios de material, sistemas de consulta, plataformas de práctica
+    \item \textbf{Automatizaciones}: Envío de notificaciones, generación de reportes, sincronización de datos
+    \item \textbf{Integraciones}: Conexión con servicios externos, APIs para terceros, webhooks
+\end{itemize}
+
+\subsection{Ventajas del Enfoque Low-Code para Proyectos Institucionales}
+
+Un sistema de complejidad media-alta, desarrollado con metodologías tradicionales, requeriría:
+
+\begin{itemize}
+    \item Equipo de desarrollo experimentado
+    \item Varios meses de desarrollo mínimo
+    \item Presupuesto significativo
+    \item Mantenimiento especializado continuo
+\end{itemize}
+
+Con el stack low-code propuesto, el mismo sistema puede:
+
+\begin{enumerate}
+    \item \textbf{Desarrollarse incrementalmente}: Módulo por módulo, con entregas funcionales tempranas.
+
+    \item \textbf{Involucrar a estudiantes}: Como proyecto académico real con impacto institucional.
+
+    \item \textbf{Iterarse rápidamente}: Cambios en la interfaz o lógica en horas, no semanas.
+
+    \item \textbf{Mantenerse internamente}: Sin dependencia de proveedores externos.
+\end{enumerate}
+
+\subsection{Distribución de Responsabilidades por Herramienta}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{3cm}p{10cm}@{}}
+\toprule
+\textbf{Herramienta} & \textbf{Rol en las Aplicaciones} \\
+\midrule
+\textbf{Supabase} & Base de datos centralizada, autenticación de usuarios, almacenamiento de archivos, APIs automáticas para consultas. \\
+\addlinespace
+\textbf{Appsmith} & Interfaces de usuario: paneles administrativos, portales de consulta, formularios de carga de datos, dashboards con métricas. \\
+\addlinespace
+\textbf{n8n} & Lógica de negocio: validaciones complejas, cálculos, notificaciones automáticas, generación de reportes, integración entre sistemas. \\
+\addlinespace
+\textbf{Redis} & Caché de consultas frecuentes, manejo de sesiones, colas de procesamiento para tareas pesadas. \\
+\addlinespace
+\textbf{Nginx} & Punto de entrada único, SSL, seguridad, enrutamiento a cada servicio según el subdominio. \\
+\bottomrule
+\end{tabular}
+\caption{Distribución de responsabilidades por herramienta}
+\end{table}
+
+\subsection{Ejemplo Ilustrativo: Sistema de Solicitudes}
+
+Para ilustrar cómo interactúan las herramientas, consideremos un flujo típico de gestión de solicitudes:
+
+\begin{enumerate}
+    \item El usuario accede al portal (Appsmith) y se autentica (Supabase Auth).
+    \item Visualiza el formulario de solicitud correspondiente.
+    \item Completa los datos requeridos y adjunta documentación si es necesario.
+    \item Appsmith envía la solicitud a un workflow de n8n.
+    \item n8n valida:
+    \begin{itemize}
+        \item ¿El usuario tiene permisos para esta solicitud?
+        \item ¿Los datos ingresados son válidos?
+        \item ¿Se cumplen los requisitos previos?
+    \end{itemize}
+    \item Si todo es válido, n8n registra la solicitud en Supabase.
+    \item n8n envía notificación por email al usuario y a los responsables.
+    \item Appsmith muestra confirmación al usuario.
+\end{enumerate}
+
+Este flujo, que en desarrollo tradicional requeriría backend complejo, se resuelve visualmente en n8n con nodos conectados.
+
+\subsection{Valor Educativo de los Proyectos Institucionales}
+
+El desarrollo de aplicaciones reales para el instituto representa una oportunidad pedagógica única:
+
+\begin{itemize}
+    \item \textbf{Proyecto real}: Los estudiantes trabajan en sistemas que tendrán uso concreto.
+
+    \item \textbf{Complejidad graduada}: Se pueden asignar módulos de distinta dificultad según el nivel del estudiante.
+
+    \item \textbf{Continuidad}: Los proyectos trascienden cohortes; cada generación hereda y mejora los sistemas.
+
+    \item \textbf{Responsabilidad}: Los estudiantes experimentan las consecuencias reales de sus decisiones de diseño.
+
+    \item \textbf{Portfolio}: Participación demostrable en sistemas institucionales reales.
+\end{itemize}
+
+% ==============================================================================
+% SECCIÓN 6: INFRAESTRUCTURA Y AUTOMATIZACIÓN
+% ==============================================================================
+\section{Infraestructura y Automatización}
+
+\subsection{Estructura del Proyecto}
+
+El proyecto de infraestructura sigue una estructura organizada y documentada:
+
+\begin{lstlisting}[caption=Estructura del proyecto de infraestructura]
+lowcode-stack/
+├── ansible.cfg              # Configuracion Ansible
+├── docker-compose.yml       # Contenedor de control
+├── Dockerfile               # Imagen Ansible
+├── requirements.yml         # Dependencias Galaxy
+├── inventory/
+│   └── production/
+│       ├── hosts.yml        # Servidores
+│       └── group_vars/
+│           └── all.yml      # Variables globales
+├── playbooks/
+│   ├── site.yml             # Despliegue completo
+│   ├── setup.yml            # Solo sistema
+│   └── deploy.yml           # Solo servicios
+└── roles/
+    ├── secrets/             # Generacion de secretos
+    ├── common/              # Sistema base, UFW
+    ├── redis/               # Cache
+    ├── supabase/            # Backend
+    ├── appsmith/            # Frontend
+    ├── n8n/                 # Workflows
+    └── nginx/               # Reverse proxy + SSL
+\end{lstlisting}
+
+\subsection{Requisitos de Hardware}
+
+Para un despliegue de producción, se recomienda:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Recurso} & \textbf{Mínimo Recomendado} \\
+\midrule
+CPU & 4 cores \\
+RAM & 8 GB \\
+Almacenamiento & 100 GB SSD \\
+Sistema Operativo & Ubuntu 24.04 LTS \\
+Conectividad & IP pública, puertos 80/443 \\
+\bottomrule
+\end{tabular}
+\caption{Requisitos de hardware para producción}
+\end{table}
+
+\subsection{Proceso de Despliegue}
+
+El despliegue se realiza en un solo comando:
+
+\begin{lstlisting}[language=bash, caption=Comando de despliegue]
+# Construir contenedor de control
+docker compose build
+
+# Ejecutar despliegue completo
+docker compose run --rm ansible playbooks/site.yml --ask-pass
+\end{lstlisting}
+
+El proceso automatizado incluye:
+
+\begin{enumerate}
+    \item Verificación de requisitos del sistema
+    \item Instalación de paquetes base
+    \item Configuración de firewall (UFW)
+    \item Instalación de Docker
+    \item Generación automática de secretos
+    \item Despliegue de todos los servicios
+    \item Configuración de SSL con Let's Encrypt
+    \item Verificación de salud de servicios
+\end{enumerate}
+
+\subsection{Mantenimiento y Actualizaciones}
+
+\subsubsection{Actualizaciones de Servicios}
+
+\begin{lstlisting}[language=bash, caption=Actualización de servicios específicos]
+# Actualizar solo Appsmith
+docker compose run --rm ansible playbooks/site.yml \
+    --tags appsmith --ask-pass
+
+# Actualizar solo n8n
+docker compose run --rm ansible playbooks/site.yml \
+    --tags n8n --ask-pass
+\end{lstlisting}
+
+\subsubsection{Backups}
+
+Se recomienda configurar backups automatizados de:
+
+\begin{itemize}
+    \item Base de datos PostgreSQL (pg\_dump)
+    \item Archivos de Supabase Storage
+    \item Configuraciones de n8n y Appsmith
+    \item Archivo de secretos
+\end{itemize}
+
+\subsection{Plan de Contingencia y Recuperación}
+
+\subsubsection{Política de Backups Recomendada}
+
+\begin{itemize}
+    \item Backups diarios automáticos de la base de datos PostgreSQL
+    \item Backups semanales completos del sistema (configuraciones + datos)
+    \item Retención mínima de 30 días para backups diarios
+    \item Almacenamiento en ubicación separada del servidor principal (otro VPS o almacenamiento en nube)
+\end{itemize}
+
+\subsubsection{Procedimiento de Recuperación ante Desastres}
+
+En caso de fallo catastrófico del servidor:
+
+\begin{enumerate}
+    \item Provisionar un nuevo servidor VPS con los mismos requisitos mínimos
+    \item Ejecutar el playbook de Ansible para reinstalar todo el stack (2-4 horas)
+    \item Restaurar el backup más reciente de PostgreSQL
+    \item Restaurar configuraciones de n8n y Appsmith desde backup
+    \item Verificar funcionamiento de todos los servicios
+    \item Actualizar registros DNS si la IP cambió
+\end{enumerate}
+
+\textbf{Tiempo estimado de recuperación total}: 4-8 horas, dependiendo del tamaño de los datos.
+
+\subsubsection{Monitoreo de Disponibilidad}
+
+Se recomienda implementar \textbf{Uptime Kuma} (incluido en la tabla de servicios adicionales) para:
+
+\begin{itemize}
+    \item Monitoreo continuo de disponibilidad de cada servicio
+    \item Alertas automáticas por email o Telegram ante caídas
+    \item Historial de disponibilidad para análisis
+    \item Dashboard público opcional para transparencia
+\end{itemize}
+
+\subsection{Escalabilidad y Crecimiento}
+
+El stack está diseñado para crecer con las necesidades institucionales:
+
+\begin{enumerate}
+    \item \textbf{Vertical}: Aumentar recursos del servidor
+    \item \textbf{Horizontal}: Separar servicios en múltiples servidores
+    \item \textbf{Nuevos servicios}: Agregar herramientas self-hosted adicionales
+\end{enumerate}
+
+\subsection{Recursos Humanos Necesarios}
+
+\subsubsection{Perfil del Administrador Técnico}
+
+Se requiere al menos una persona con conocimientos básicos de:
+
+\begin{itemize}
+    \item Línea de comandos Linux (navegación, edición de archivos, permisos)
+    \item Conceptos básicos de Docker (contenedores, imágenes, docker-compose)
+    \item Administración básica de servidores (SSH, firewall, actualizaciones)
+\end{itemize}
+
+Este perfil puede ser cubierto por un docente del área técnica o un estudiante avanzado bajo supervisión. No se requiere experiencia profesional en administración de sistemas.
+
+\subsubsection{Estimación de Tiempo}
+
+\begin{itemize}
+    \item \textbf{Despliegue inicial}: 2-4 horas (el proceso está automatizado con Ansible)
+    \item \textbf{Mantenimiento mensual}: 2-4 horas (actualizaciones de seguridad, verificación de backups)
+    \item \textbf{Soporte a usuarios}: Variable según nivel de adopción y complejidad de proyectos
+\end{itemize}
+
+\subsubsection{Modelo de Sostenibilidad}
+
+Los estudiantes de años avanzados pueden colaborar en el mantenimiento del stack como parte de su formación práctica. Esto crea un ciclo virtuoso donde cada cohorte:
+
+\begin{enumerate}
+    \item Aprende utilizando la infraestructura existente
+    \item Contribuye mejoras y nuevas funcionalidades
+    \item Documenta y transfiere conocimiento a la siguiente generación
+\end{enumerate}
+
+\subsection{Expansibilidad: Un Ecosistema Abierto}
+
+Una de las ventajas más significativas de la arquitectura basada en Docker es la \textbf{facilidad para incorporar nuevos servicios auto-alojados}. El ecosistema de software de código abierto ofrece cientos de aplicaciones listas para desplegarse en contenedores, lo que permite expandir las capacidades institucionales sin costos de licencia y manteniendo el control total sobre los datos.
+
+La infraestructura Ansible desarrollada para este stack puede extenderse fácilmente para incluir nuevos roles, siguiendo el mismo patrón de despliegue automatizado.
+
+\subsubsection{Ejemplos de Servicios Adicionales}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{3.5cm}p{4cm}p{6cm}@{}}
+\toprule
+\textbf{Categoría} & \textbf{Herramientas} & \textbf{Uso Institucional} \\
+\midrule
+Gestión documental & Paperless-ngx, OnlyOffice & Digitalización de legajos, archivo institucional, edición colaborativa \\
+\addlinespace
+Control de versiones & Gitea, GitLab & Repositorios de código para proyectos, versionado de documentación \\
+\addlinespace
+Gestión de proyectos & Plane, Taiga, OpenProject & Seguimiento de proyectos académicos, metodologías ágiles \\
+\addlinespace
+E-learning & Moodle, Canvas LMS & Aulas virtuales, evaluaciones en línea \\
+\addlinespace
+Almacenamiento & Nextcloud, Seafile & Nube institucional, sincronización de archivos \\
+\addlinespace
+Comunicación & Mattermost, Rocket.Chat & Mensajería institucional, canales por carrera \\
+\addlinespace
+Monitoreo & Grafana, Uptime Kuma & Observabilidad del stack, alertas \\
+\addlinespace
+Wiki & BookStack, Wiki.js & Base de conocimiento, documentación \\
+\bottomrule
+\end{tabular}
+\caption{Servicios adicionales que pueden integrarse al ecosistema}
+\end{table}
+
+\subsubsection{Proceso de Incorporación}
+
+Agregar un nuevo servicio al stack implica:
+
+\begin{enumerate}
+    \item Crear un nuevo rol de Ansible (siguiendo la plantilla existente)
+    \item Definir el archivo \texttt{docker-compose.yml} del servicio
+    \item Configurar el subdominio en Nginx
+    \item Ejecutar el playbook de despliegue
+\end{enumerate}
+
+Este proceso, que podría tomar días o semanas en una infraestructura tradicional, se reduce a \textbf{horas} gracias a la estandarización y automatización del stack.
+
+\subsubsection{Visión a Futuro}
+
+El stack propuesto no es un punto de llegada sino un \textbf{punto de partida}. A medida que la institución identifique nuevas necesidades, el ecosistema puede crecer orgánicamente:
+
+\begin{itemize}
+    \item \textbf{Hoy}: Supabase + Appsmith + n8n (desarrollo de aplicaciones)
+    \item \textbf{Corto plazo}: + Gitea (control de versiones para proyectos)
+    \item \textbf{Mediano plazo}: + Moodle (aulas virtuales integradas con las aplicaciones institucionales)
+    \item \textbf{Largo plazo}: + Nextcloud + Paperless (gestión documental completa)
+\end{itemize}
+
+Cada adición fortalece el ecosistema y aumenta la independencia tecnológica institucional.
+
+% ==============================================================================
+% SECCIÓN 7: SEGURIDAD Y PROTECCIÓN DE DATOS
+% ==============================================================================
+\section{Seguridad y Protección de Datos}
+
+\subsection{Soberanía de Datos}
+
+Uno de los pilares fundamentales de esta propuesta es la \textbf{soberanía de datos}: toda la información institucional permanece en infraestructura controlada por el propio instituto. Esto significa:
+
+\begin{itemize}
+    \item No hay dependencia de servidores de terceros (Google, Amazon, Microsoft)
+    \item Los datos de estudiantes no cruzan fronteras ni están sujetos a legislación extranjera
+    \item Control total sobre quién accede a la información y cuándo
+    \item Capacidad de auditar completamente el sistema
+\end{itemize}
+
+\subsection{Medidas de Seguridad Implementadas}
+
+El stack incorpora múltiples capas de seguridad:
+
+\begin{description}
+    \item[Cifrado en tránsito] Todas las conexiones utilizan SSL/TLS obligatorio. Los certificados se gestionan automáticamente con Let's Encrypt.
+
+    \item[Autenticación robusta] Supabase Auth proporciona autenticación de nivel empresarial con soporte para contraseñas seguras, autenticación de dos factores (2FA), y tokens JWT.
+
+    \item[Control de acceso granular] Row Level Security (RLS) en PostgreSQL permite definir políticas de acceso a nivel de fila, asegurando que cada usuario solo vea los datos que le corresponden.
+
+    \item[Firewall configurado] UFW (Uncomplicated Firewall) está configurado para permitir únicamente los puertos necesarios (80, 443 para web; 22 para SSH).
+
+    \item[Aislamiento de servicios] Cada componente corre en su propio contenedor Docker, limitando el impacto de una eventual vulnerabilidad.
+
+    \item[Gestión de secretos] Las credenciales y claves se generan automáticamente durante el despliegue y se almacenan de forma segura, separadas del código.
+\end{description}
+
+\subsection{Protección de Datos de Estudiantes}
+
+Las instituciones educativas tienen responsabilidad especial sobre los datos de sus estudiantes. Este stack facilita el cumplimiento de buenas prácticas:
+
+\begin{itemize}
+    \item Los datos personales nunca abandonan el servidor institucional
+    \item El acceso está restringido por roles (alumno, docente, administrativo, administrador)
+    \item PostgreSQL mantiene logs de auditoría que permiten rastrear accesos y modificaciones
+    \item Es posible implementar políticas de retención y eliminación de datos según normativas
+    \item Los backups están cifrados y almacenados de forma segura
+\end{itemize}
+
+\subsection{Recomendaciones de Seguridad Adicionales}
+
+Para maximizar la seguridad del sistema, se recomienda:
+
+\begin{enumerate}
+    \item Mantener actualizados todos los componentes (el stack facilita actualizaciones con Ansible)
+    \item Utilizar contraseñas fuertes y únicas para cada servicio
+    \item Habilitar autenticación de dos factores para usuarios administrativos
+    \item Realizar auditorías periódicas de accesos y permisos
+    \item Probar regularmente los procedimientos de recuperación de backups
+\end{enumerate}
+
+% ==============================================================================
+% SECCIÓN 8: ANÁLISIS DE VENTAJAS Y DESVENTAJAS
+% ==============================================================================
+\section{Análisis de Ventajas y Desventajas}
+
+\subsection{Ventajas del Stack Propuesto}
+
+\subsubsection{Para la Institución}
+
+\begin{enumerate}
+    \item \textbf{Independencia tecnológica}: Sin dependencia de proveedores externos ni costos de licencia.
+
+    \item \textbf{Control de datos}: Todos los datos institucionales permanecen en infraestructura propia.
+
+    \item \textbf{Costos reducidos}: Solo costos de hosting (servidor VPS), sin licencias de software.
+
+    \item \textbf{Personalización}: Adaptación completa a necesidades específicas del instituto.
+
+    \item \textbf{Sostenibilidad}: Los propios alumnos pueden mantener y mejorar el sistema.
+\end{enumerate}
+
+\subsubsection{Para los Docentes}
+
+\begin{enumerate}
+    \item \textbf{Herramientas modernas}: Enseñanza de tecnologías actuales y demandadas.
+
+    \item \textbf{Proyectos demostrables}: Estudiantes con portfolios de proyectos completos.
+
+    \item \textbf{Menor frustración}: Menos tiempo perdido en configuraciones técnicas.
+
+    \item \textbf{Progresión clara}: Camino definido de aprendizaje visual a código.
+\end{enumerate}
+
+\subsubsection{Para los Estudiantes}
+
+\begin{enumerate}
+    \item \textbf{Resultados rápidos}: Sistemas funcionales en semanas, no meses.
+
+    \item \textbf{Comprensión visual}: Conceptos abstractos hechos tangibles.
+
+    \item \textbf{Empleabilidad}: Habilidades directamente aplicables en el mercado.
+
+    \item \textbf{Confianza}: Experiencia real de completar proyectos de software.
+
+    \item \textbf{Transición suave}: De visual a código sin saltos abruptos.
+\end{enumerate}
+
+\subsection{Desventajas y Limitaciones}
+
+\subsubsection{Técnicas}
+
+\begin{enumerate}
+    \item \textbf{Complejidad de auto-hospedaje}: Requiere conocimiento de servidores y Docker.
+
+    \item \textbf{Mantenimiento}: Actualizaciones y backups deben gestionarse activamente.
+
+    \item \textbf{Debugging}: Errores en sistemas integrados pueden ser difíciles de rastrear.
+
+    \item \textbf{Rendimiento}: Aplicaciones muy complejas pueden requerir optimización.
+
+    \item \textbf{Limitaciones de widgets}: Appsmith tiene límites en personalización visual.
+\end{enumerate}
+
+\subsubsection{Pedagógicas}
+
+\begin{enumerate}
+    \item \textbf{Abstracción excesiva}: Riesgo de no entender qué sucede ``debajo''.
+
+    \item \textbf{Dependencia de herramientas}: Habilidades menos transferibles a otros stacks.
+
+    \item \textbf{Documentación en inglés}: Barrera idiomática para algunos estudiantes.
+
+    \item \textbf{Curva inicial}: Las herramientas tienen su propia curva de aprendizaje.
+\end{enumerate}
+
+\subsubsection{Organizacionales}
+
+\begin{enumerate}
+    \item \textbf{Cambio de paradigma}: Requiere adaptación curricular.
+
+    \item \textbf{Capacitación docente}: Los docentes deben aprender las herramientas.
+
+    \item \textbf{Resistencia al cambio}: Posible resistencia de docentes tradicionales.
+
+    \item \textbf{Infraestructura}: Necesidad de servidor dedicado o VPS.
+\end{enumerate}
+
+\subsection{Comparación con Desarrollo Tradicional}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Aspecto} & \textbf{Tradicional} & \textbf{Low-Code} \\
+\midrule
+Tiempo hasta MVP & 3-6 meses & 2-4 semanas \\
+Conocimiento previo requerido & Alto & Medio \\
+Curva de aprendizaje inicial & Pronunciada & Moderada \\
+Flexibilidad máxima & Ilimitada & Con límites \\
+Mantenibilidad por novatos & Difícil & Posible \\
+Proyectos completados/año & 1-2 & 3-5 \\
+Frustración inicial & Alta & Baja \\
+Transferencia de conocimiento & Alta & Media \\
+\bottomrule
+\end{tabular}
+\caption{Comparación entre enfoques de desarrollo}
+\end{table}
+
+\subsection{Comparación con Alternativas del Mercado}
+
+Además de la comparación con el desarrollo tradicional, es útil evaluar el stack propuesto contra otras soluciones low-code comerciales:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{3.2cm}p{3.5cm}p{3.5cm}p{3.5cm}@{}}
+\toprule
+\textbf{Aspecto} & \textbf{Stack Propuesto} & \textbf{Firebase + Retool} & \textbf{Airtable + Zapier} \\
+\midrule
+Costo mensual & \$20-40 (solo VPS) & \$200+ (licencias) & \$100+ (licencias) \\
+Control de datos & Total & Parcial (Google) & Ninguno \\
+Dependencia externa & Ninguna & Alta & Alta \\
+Límites de uso & Sin límites & Por usuarios/consultas & Por registros/tareas \\
+Auto-hospedable & Sí & No & No \\
+Valor pedagógico & Alto & Medio & Bajo \\
+Personalización & Total & Limitada & Muy limitada \\
+\bottomrule
+\end{tabular}
+\caption{Comparación con alternativas comerciales}
+\end{table}
+
+\textbf{Conclusión}: El stack propuesto ofrece el mejor balance entre costo, control y capacidad educativa para un contexto institucional.
+
+\subsection{Mitigación de Desventajas}
+
+\begin{enumerate}
+    \item \textbf{Abstracción excesiva}: Incluir módulos donde se explore ``bajo el capó'' (SQL directo, APIs manuales).
+
+    \item \textbf{Dependencia de herramientas}: Enseñar los conceptos subyacentes (REST, SQL, autenticación) de forma transferible.
+
+    \item \textbf{Documentación}: Crear material en español y tutoriales institucionales.
+
+    \item \textbf{Capacitación docente}: Talleres de formación previos a la implementación.
+\end{enumerate}
+
+% ==============================================================================
+% SECCIÓN 9: MATERIAL COMPLEMENTARIO (ANEXOS)
+% ==============================================================================
+\section{Material Complementario}
+
+Este documento se acompaña de dos anexos que complementan y refuerzan visualmente los conceptos aquí expuestos.
+
+\subsection{Anexo I: Presentación de Diapositivas}
+
+\textbf{Título}: ``Transformación Digital Educativa: Una Suite de Desarrollo Low-Code para el CENT 40''
+
+Esta presentación sintetiza los puntos clave de la propuesta en formato visual, ideal para exposiciones ante autoridades institucionales o reuniones de trabajo. Incluye:
+
+\begin{itemize}
+    \item Resumen ejecutivo del stack propuesto
+    \item Beneficios para la institución y los estudiantes
+    \item Visualización de la arquitectura
+    \item Casos de uso ilustrativos
+\end{itemize}
+
+\subsection{Anexo II: Infografía}
+
+\textbf{Título}: ``El Ecosistema Low-Code: Construyendo Aplicaciones de Forma Visual y Eficiente''
+
+Infografía de una página que presenta de forma gráfica y accesible el concepto de desarrollo low-code y las herramientas que componen el stack.
+
+\subsection{Nota sobre el Material Anexo}
+
+\begin{quote}
+\textit{Tanto las diapositivas como la infografía fueron generadas con asistencia de inteligencia artificial (Google NotebookLM). Por esta razón, pueden contener pequeñas inconsistencias o imprecisiones en detalles específicos. No obstante, en su contexto general, ambos materiales exponen las ideas centrales de forma clara y accesible, cumpliendo su función de material complementario de divulgación.}
+\end{quote}
+
+Se recomienda utilizar estos anexos como apoyo visual, manteniendo este documento técnico como referencia principal para cuestiones de detalle.
+
+% ==============================================================================
+% SECCIÓN 10: CONCLUSIONES Y RECOMENDACIONES
+% ==============================================================================
+\section{Conclusiones y Recomendaciones}
+
+\subsection{Síntesis de la Propuesta}
+
+El stack low-code propuesto representa una oportunidad concreta de:
+
+\begin{enumerate}
+    \item Modernizar la enseñanza de desarrollo de software
+    \item Producir soluciones institucionales reales con recursos estudiantiles
+    \item Reducir la brecha entre teoría académica y práctica profesional
+    \item Optimizar el uso del tiempo limitado de formación
+\end{enumerate}
+
+Low-code no es ``programar menos'' ni ``programar mal''. Es una abstracción inteligente que permite enfocarse en lo esencial: entender problemas, diseñar soluciones y producir sistemas funcionales.
+
+\subsection{Recomendaciones de Implementación}
+
+\begin{enumerate}
+    \item \textbf{Piloto controlado}: Comenzar con un grupo reducido de estudiantes y un proyecto inicial de complejidad moderada.
+
+    \item \textbf{Capacitación docente}: Realizar talleres de formación antes de la implementación curricular.
+
+    \item \textbf{Documentación local}: Crear guías y tutoriales adaptados al contexto institucional.
+
+    \item \textbf{Iteración continua}: Ajustar el enfoque basándose en feedback de docentes y estudiantes.
+
+    \item \textbf{Comunidad interna}: Fomentar la colaboración entre cohortes para mantenimiento y mejora de los sistemas desarrollados.
+\end{enumerate}
+
+\subsection{Próximos Pasos Sugeridos}
+
+\begin{enumerate}
+    \item Aprobación institucional de la propuesta
+    \item Adquisición/configuración de servidor de producción
+    \item Despliegue inicial del stack
+    \item Capacitación de equipo docente piloto
+    \item Desarrollo de un primer proyecto piloto
+    \item Evaluación y ajustes
+    \item Expansión gradual
+\end{enumerate}
+
+\newpage
+
+% ==============================================================================
+% ANEXO: GLOSARIO DE TÉRMINOS TÉCNICOS
+% ==============================================================================
+\section*{Anexo: Glosario de Términos Técnicos}
+\addcontentsline{toc}{section}{Anexo: Glosario de Términos Técnicos}
+
+Este glosario define los términos técnicos utilizados en el documento, facilitando su comprensión para lectores no especializados.
+
+\begin{description}
+    \item[API] (Application Programming Interface) Interfaz que permite que diferentes sistemas de software se comuniquen entre sí. Por ejemplo, cuando Appsmith consulta datos de Supabase, lo hace a través de una API.
+
+    \item[Backend] La parte ``invisible'' de una aplicación que procesa datos, maneja la lógica de negocio y se comunica con la base de datos. El usuario final no interactúa directamente con el backend.
+
+    \item[Base de datos] Sistema organizado para almacenar, gestionar y recuperar información. PostgreSQL es la base de datos utilizada en este stack.
+
+    \item[Contenedor] Unidad de software que empaqueta código y todas sus dependencias para que una aplicación se ejecute de forma aislada y reproducible en cualquier entorno.
+
+    \item[Docker] Plataforma que permite crear, desplegar y ejecutar aplicaciones en contenedores. Facilita la instalación y gestión de software complejo.
+
+    \item[Frontend] La interfaz visual de una aplicación con la que interactúa el usuario: botones, formularios, tablas, menús, etc.
+
+    \item[Low-code] Enfoque de desarrollo de software que minimiza la programación manual mediante herramientas visuales de arrastrar y soltar, permitiendo crear aplicaciones con menos código tradicional.
+
+    \item[Open source] (Código abierto) Software cuyo código fuente es público y puede ser usado, estudiado, modificado y distribuido libremente por cualquier persona.
+
+    \item[PostgreSQL] Sistema de gestión de bases de datos relacional de código abierto, reconocido por su robustez, extensibilidad y cumplimiento de estándares SQL.
+
+    \item[Self-hosted] (Auto-hospedado) Software instalado y ejecutado en servidores propios o controlados por la organización, en lugar de usar servicios en la nube de terceros.
+
+    \item[SSL/TLS] Protocolos de seguridad que cifran las comunicaciones por internet. Se visualiza como el candado en la barra de direcciones del navegador (HTTPS).
+
+    \item[VPS] (Virtual Private Server) Servidor virtual alquilado en un centro de datos. Ofrece recursos dedicados (CPU, RAM, almacenamiento) a un costo accesible.
+
+    \item[Workflow] Flujo de trabajo automatizado compuesto por una secuencia de pasos o acciones que se ejecutan en orden. En n8n, los workflows se construyen conectando nodos visualmente.
+\end{description}
+
+\vspace{1cm}
+
+\begin{center}
+\rule{0.5\textwidth}{0.4pt}
+\end{center}
+
+\vspace{0.5cm}
+
+\noindent\textbf{Documento elaborado para el Instituto CENT 40}\\
+\noindent Propuesta técnica sujeta a revisión y aprobación institucional.\\
+\noindent Para consultas técnicas, contactar al Área de Tecnología e Innovación Educativa.
+
+\end{document}

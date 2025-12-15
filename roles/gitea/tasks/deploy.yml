@@ -1,0 +1,60 @@
+# ==============================================================================
+# Role: gitea - Deployment Tasks
+# ==============================================================================
+
+---
+- name: Ensure gitea directory exists
+  ansible.builtin.file:
+    path: "{{ gitea_install_path }}"
+    state: directory
+    owner: "{{ gitea_system_user }}"
+    group: "{{ gitea_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Ensure gitea data directories exist
+  ansible.builtin.file:
+    path: "{{ gitea_install_path }}/{{ item }}"
+    state: directory
+    owner: "1000"
+    group: "1000"
+    mode: '0755'
+  become: true
+  loop:
+    - data
+    - data/gitea
+    - data/postgres
+    - config
+
+- name: Create Docker network if not exists
+  community.docker.docker_network:
+    name: "{{ gitea_docker_network }}"
+    state: present
+  become: true
+
+- name: Generate gitea docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ gitea_install_path }}/docker-compose.yml"
+    owner: "{{ gitea_system_user }}"
+    group: "{{ gitea_system_group }}"
+    mode: '0644'
+  become: true
+  notify: Restart gitea
+
+- name: Pull gitea Docker images
+  community.docker.docker_image:
+    name: "{{ item }}"
+    source: pull
+  become: true
+  loop:
+    - "{{ gitea_image }}:{{ gitea_version }}"
+    - "{{ gitea_postgres_image }}:{{ gitea_postgres_version }}"
+
+- name: Start gitea stack with docker compose
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ gitea_install_path }}"
+  become: true
+  register: gitea_compose_up
+  changed_when: "'Started' in gitea_compose_up.stdout or 'Created' in gitea_compose_up.stdout"

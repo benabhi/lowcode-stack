@@ -1,0 +1,58 @@
+# ==============================================================================
+# Role: gitea - Default Variables
+# ==============================================================================
+
+---
+# Installation path
+gitea_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/gitea"
+
+# Docker image
+gitea_image: "gitea/gitea"
+gitea_version: "{{ lowcode_gitea_version | default('latest') }}"
+
+# Container settings
+gitea_container_name: "{{ lowcode_gitea_container_name | default('lowcode-gitea') }}"
+gitea_http_port: "{{ lowcode_gitea_port | default(3001) }}"
+gitea_ssh_port: "{{ lowcode_gitea_ssh_port | default(2222) }}"
+
+# App settings
+gitea_app_name: "{{ lowcode_gitea_app_name | default('Gitea') }}"
+gitea_domain: "{{ lowcode_domain_gitea | default('gitea.localhost') }}"
+gitea_root_url: "https://{{ gitea_domain }}/"
+
+# ==============================================================================
+# PostgreSQL Configuration - Own Container (Independent)
+# ==============================================================================
+gitea_postgres_image: "postgres"
+gitea_postgres_version: "15-alpine"
+gitea_postgres_container_name: "gitea-db"
+
+gitea_db_type: "postgres"
+gitea_db_host: "{{ gitea_postgres_container_name }}"
+gitea_db_port: 5432
+gitea_db_name: "gitea"
+gitea_db_user: "gitea"
+gitea_db_password: "{{ lowcode_secrets.gitea_db_password | default('change-me-gitea-db-password') }}"
+
+# Service settings
+gitea_disable_registration: "{{ lowcode_gitea_disable_registration | default(false) }}"
+gitea_require_signin: "{{ lowcode_gitea_require_signin | default(false) }}"
+
+# SSH settings
+gitea_ssh_domain: "{{ gitea_domain }}"
+gitea_ssh_listen_port: 22
+gitea_ssh_external_port: "{{ gitea_ssh_port }}"
+
+# Timezone
+gitea_timezone: "{{ lowcode_timezone | default('America/Argentina/Buenos_Aires') }}"
+
+# Docker network
+gitea_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# Health check settings
+gitea_healthcheck_retries: 12
+gitea_healthcheck_delay: 10
+
+# System user
+gitea_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+gitea_system_group: "{{ lowcode_system_group | default('lowcode') }}"

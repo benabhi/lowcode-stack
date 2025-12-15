@@ -27,7 +27,7 @@
     group: root
     mode: '0644'
   become: true
-  loop: "{{ nginx_sites }}"
+  loop: "{{ nginx_all_sites }}"
   notify: Reload nginx
 
 - name: Enable initial sites
@@ -36,7 +36,7 @@
     dest: "/etc/nginx/sites-enabled/{{ item.name }}"
     state: link
   become: true
-  loop: "{{ nginx_sites }}"
+  loop: "{{ nginx_all_sites }}"
   notify: Reload nginx
 
 - name: Force Nginx reload before certificate generation
@@ -46,7 +46,7 @@
   ansible.builtin.stat:
     path: "{{ nginx_ssl_cert_path }}/{{ item.domain }}/fullchain.pem"
   register: cert_exists
-  loop: "{{ nginx_sites }}"
+  loop: "{{ nginx_all_sites }}"
 
 - name: Generate SSL certificates with Certbot
   ansible.builtin.command: >

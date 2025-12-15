@@ -8,11 +8,15 @@
 #   docker compose run --rm ansible playbooks/site.yml --ask-pass
 #
 # Tags:
+#   --tags core              # Deploy core stack only (supabase, appsmith, n8n, redis, nginx)
+#   --tags optional          # Deploy optional services only (gitea, docmost)
 #   --tags common,docker     # Only system setup
 #   --tags supabase          # Only Supabase
 #   --tags appsmith          # Only Appsmith
 #   --tags n8n               # Only n8n
 #   --tags nginx             # Only Nginx
+#   --tags gitea             # Only Gitea (optional)
+#   --tags docmost           # Only Docmost (optional)
 #   --tags watermark         # Only apply Appsmith watermark patch
 # ==============================================================================
 
@@ -42,51 +46,75 @@
         msg:
           - "LOW-CODE STACK DEPLOYMENT"
           - "Target: {{ inventory_hostname }} ({{ ansible_host }})"
-          - "Domains: {{ lowcode_domain_supabase }} | {{ lowcode_domain_n8n }} | {{ lowcode_domain_appsmith }}"
+          - "Core domains: {{ lowcode_domain_supabase }} | {{ lowcode_domain_n8n }} | {{ lowcode_domain_appsmith }}"
+          - "Optional domains: {{ lowcode_domain_gitea | default('not configured') }} | {{ lowcode_domain_docmost | default('not configured') }}"
       tags: always
 
   roles:
+    # ==========================================================================
+    # CORE STACK
+    # ==========================================================================
+
     # Phase 0: Generate/Load secrets
     - role: secrets
       tags: [secrets, always]
 
     # Phase 1: System configuration
     - role: common
-      tags: [common, setup]
+      tags: [common, setup, core]
 
     # Phase 2: Docker installation
     - role: geerlingguy.docker
-      tags: [docker, setup]
+      tags: [docker, setup, core]
       vars:
         docker_install_compose_plugin: true
         docker_users:
           - "{{ lowcode_system_user }}"
 
-    # Phase 3: Redis (dependency for n8n)
+    # Phase 3: Redis (dependency for n8n and docmost)
     - role: redis
-      tags: [redis, deploy]
+      tags: [redis, deploy, core]
 
-    # Phase 4: Supabase
+    # Phase 4: Supabase (provides PostgreSQL for all services)
     - role: supabase
-      tags: [supabase, deploy]
+      tags: [supabase, deploy, core]
 
     # Phase 5: Appsmith
     - role: appsmith
-      tags: [appsmith, deploy]
+      tags: [appsmith, deploy, core]
 
     # Phase 6: n8n
     - role: n8n
-      tags: [n8n, deploy]
+      tags: [n8n, deploy, core]
 
-    # Phase 7: Nginx reverse proxy (last, after all services are up)
+    # ==========================================================================
+    # OPTIONAL SERVICES
+    # ==========================================================================
+
+    # Phase 7: Gitea (optional git server)
+    - role: gitea
+      tags: [gitea, deploy, optional]
+      when: lowcode_enable_gitea | default(false) | bool
+
+    # Phase 8: Docmost (optional documentation platform)
+    - role: docmost
+      tags: [docmost, deploy, optional]
+      when: lowcode_enable_docmost | default(false) | bool
+
+    # ==========================================================================
+    # NGINX (must be last to configure all services)
+    # ==========================================================================
+
+    # Phase 9: Nginx reverse proxy (last, after all services are up)
     - role: nginx
-      tags: [nginx, deploy]
+      tags: [nginx, deploy, core]
 
   post_tasks:
     - name: Display deployment summary
       ansible.builtin.debug:
         msg:
           - "DEPLOYMENT COMPLETE!"
-          - "URLs: https://{{ lowcode_domain_supabase }} | https://{{ lowcode_domain_n8n }} | https://{{ lowcode_domain_appsmith }}"
+          - "Core URLs: https://{{ lowcode_domain_supabase }} | https://{{ lowcode_domain_n8n }} | https://{{ lowcode_domain_appsmith }}"
+          - "Optional URLs: {{ 'https://' + lowcode_domain_gitea if lowcode_enable_gitea | default(false) else 'gitea disabled' }} | {{ 'https://' + lowcode_domain_docmost if lowcode_enable_docmost | default(false) else 'docmost disabled' }}"
           - "Appsmith watermark: reapply with --tags watermark after restart"
       tags: always

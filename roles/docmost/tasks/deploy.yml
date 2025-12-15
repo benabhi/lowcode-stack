@@ -1,0 +1,61 @@
+# ==============================================================================
+# Role: docmost - Deployment Tasks
+# ==============================================================================
+
+---
+- name: Ensure docmost directory exists
+  ansible.builtin.file:
+    path: "{{ docmost_install_path }}"
+    state: directory
+    owner: "{{ docmost_system_user }}"
+    group: "{{ docmost_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Ensure docmost data directories exist
+  ansible.builtin.file:
+    path: "{{ docmost_install_path }}/{{ item }}"
+    state: directory
+    owner: "1000"
+    group: "1000"
+    mode: '0755'
+  become: true
+  loop:
+    - data
+    - data/storage
+    - data/postgres
+    - data/redis
+
+- name: Ensure Docker network exists
+  community.docker.docker_network:
+    name: "{{ docmost_docker_network }}"
+    state: present
+  become: true
+
+- name: Generate docmost docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ docmost_install_path }}/docker-compose.yml"
+    owner: "{{ docmost_system_user }}"
+    group: "{{ docmost_system_group }}"
+    mode: '0644'
+  become: true
+  notify: Restart docmost
+
+- name: Pull docmost Docker images
+  community.docker.docker_image:
+    name: "{{ item }}"
+    source: pull
+  become: true
+  loop:
+    - "{{ docmost_image }}:{{ docmost_version }}"
+    - "{{ docmost_postgres_image }}:{{ docmost_postgres_version }}"
+    - "{{ docmost_redis_image }}:{{ docmost_redis_version }}"
+
+- name: Start docmost stack with docker compose
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ docmost_install_path }}"
+  become: true
+  register: docmost_compose_up
+  changed_when: "'Started' in docmost_compose_up.stdout or 'Created' in docmost_compose_up.stdout"

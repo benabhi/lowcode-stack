@@ -123,6 +123,26 @@ nginx_sites:
     websocket: true
     max_body_size: "150M"                # Allow large uploads
 
+# Optional services (only configured if enabled)
+nginx_optional_sites:
+  - name: "gitea"
+    domain: "{{ lowcode_domain_gitea }}"
+    upstream_host: "127.0.0.1"
+    upstream_port: "{{ lowcode_gitea_port }}"
+    basic_auth: false                    # Gitea has its own auth
+    websocket: false
+    max_body_size: "100M"                # Git LFS uploads
+    enabled: "{{ lowcode_enable_gitea | default(false) }}"
+
+  - name: "docmost"
+    domain: "{{ lowcode_domain_docmost }}"
+    upstream_host: "127.0.0.1"
+    upstream_port: "{{ lowcode_docmost_port }}"
+    basic_auth: false                    # Docmost has its own auth
+    websocket: true                      # Real-time collaboration
+    max_body_size: "50M"
+    enabled: "{{ lowcode_enable_docmost | default(false) }}"
+
 # ==============================================================================
 # SUPABASE CONFIGURATION
 # ==============================================================================
@@ -221,12 +241,42 @@ common_packages:
 common_upgrade_packages: true
 common_reboot_if_required: false
 
+# ==============================================================================
+# OPTIONAL SERVICES - Enable/Disable
+# ==============================================================================
+# Set to true to enable optional services
+lowcode_enable_gitea: true
+lowcode_enable_docmost: true
+
+# ==============================================================================
+# GITEA CONFIGURATION (Optional - Git Server)
+# ==============================================================================
+lowcode_domain_gitea: "gitea.{{ lowcode_domain_base }}"
+lowcode_gitea_version: "latest"
+lowcode_gitea_port: 3001
+lowcode_gitea_ssh_port: 2222
+lowcode_gitea_container_name: "lowcode-gitea"
+
+# Gitea settings
+gitea_app_name: "Low-Code Stack Git"
+gitea_disable_registration: true         # Disable public registration
+gitea_require_signin: false               # Require sign in to view repos
+
+# ==============================================================================
+# DOCMOST CONFIGURATION (Optional - Documentation Platform)
+# ==============================================================================
+lowcode_domain_docmost: "docmost.{{ lowcode_domain_base }}"
+lowcode_docmost_version: "latest"
+lowcode_docmost_port: 3002
+lowcode_docmost_container_name: "lowcode-docmost"
+
 # Firewall (UFW)
 common_firewall_enabled: true
 common_firewall_allowed_ports:
   - { port: 22, proto: tcp }     # SSH
   - { port: 80, proto: tcp }     # HTTP
   - { port: 443, proto: tcp }    # HTTPS
+  - { port: 2222, proto: tcp }   # Gitea SSH (optional)
 
 # Fail2ban
 common_fail2ban_enabled: true

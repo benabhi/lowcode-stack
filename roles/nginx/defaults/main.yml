@@ -42,6 +42,12 @@ nginx_htpasswd_users:
 # Sites configuration (from all.yml)
 nginx_sites: "{{ nginx_sites | default([]) }}"
 
+# Optional sites (filtered by enabled flag)
+nginx_optional_sites: "{{ nginx_optional_sites | default([]) }}"
+
+# All sites combined (core + enabled optional)
+nginx_all_sites: "{{ nginx_sites + (nginx_optional_sites | selectattr('enabled', 'defined') | selectattr('enabled') | list) }}"
+
 # Domains
 nginx_domain_supabase: "{{ lowcode_domain_supabase | default('supabase.localhost') }}"
 nginx_domain_n8n: "{{ lowcode_domain_n8n | default('n8n.localhost') }}"

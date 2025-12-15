@@ -2,13 +2,22 @@
 
 Coleccion profesional de Ansible para desplegar un stack completo de desarrollo low-code/no-code en Ubuntu 24.04 LTS.
 
-## Servicios Incluidos
+## Arquitectura del Stack
+
+El stack esta organizado en dos capas: **Core** (servicios base obligatorios) y **Optional** (servicios complementarios habilitables).
+
+### Core Stack (siempre desplegado)
 
 - **Supabase** - Backend as a Service (PostgreSQL, Auth, Storage, Realtime)
 - **Appsmith** - Constructor de aplicaciones low-code (con patch de watermark)
 - **n8n** - Automatizacion de workflows
-- **Redis** - Cache para n8n
+- **Redis** - Cache para n8n y Docmost
 - **Nginx** - Reverse proxy con SSL (Let's Encrypt)
+
+### Servicios Opcionales (habilitables)
+
+- **Gitea** - Servidor Git auto-hospedado (usa PostgreSQL de Supabase)
+- **Docmost** - Plataforma de documentacion colaborativa (usa PostgreSQL y Redis del stack)
 
 ## Caracteristicas
 
@@ -85,11 +94,13 @@ docker compose run --rm ansible playbooks/site.yml
 └── roles/
     ├── secrets/                # Auto-generacion de secretos
     ├── common/                 # Sistema base, UFW
-    ├── redis/                  # Cache
-    ├── supabase/               # Backend
-    ├── appsmith/               # Low-code builder
-    ├── n8n/                    # Workflows
-    └── nginx/                  # Reverse proxy + SSL
+    ├── redis/                  # Cache (core)
+    ├── supabase/               # Backend (core)
+    ├── appsmith/               # Low-code builder (core)
+    ├── n8n/                    # Workflows (core)
+    ├── nginx/                  # Reverse proxy + SSL (core)
+    ├── gitea/                  # Git server (optional)
+    └── docmost/                # Documentation (optional)
 ```
 
 ## Comandos Utiles
@@ -98,8 +109,14 @@ docker compose run --rm ansible playbooks/site.yml
 # Verificar conexion
 docker compose run --rm ansible all -m ping --ask-pass
 
-# Despliegue completo
+# Despliegue completo (core + optional habilitados)
 docker compose run --rm ansible playbooks/site.yml --ask-pass
+
+# Solo core stack
+docker compose run --rm ansible playbooks/site.yml --tags core --ask-pass
+
+# Solo servicios opcionales
+docker compose run --rm ansible playbooks/site.yml --tags optional --ask-pass
 
 # Solo servicios (servidor ya configurado)
 docker compose run --rm ansible playbooks/deploy.yml --ask-pass
@@ -107,8 +124,10 @@ docker compose run --rm ansible playbooks/deploy.yml --ask-pass
 # Dry run (sin cambios)
 docker compose run --rm ansible playbooks/site.yml --check --diff --ask-pass
 
-# Solo un servicio
+# Solo un servicio especifico
 docker compose run --rm ansible playbooks/site.yml --tags supabase --ask-pass
+docker compose run --rm ansible playbooks/site.yml --tags gitea --ask-pass
+docker compose run --rm ansible playbooks/site.yml --tags docmost --ask-pass
 
 # Reaplicar patch de watermark
 docker compose run --rm ansible playbooks/site.yml --tags watermark --ask-pass
@@ -116,6 +135,45 @@ docker compose run --rm ansible playbooks/site.yml --tags watermark --ask-pass
 # Shell interactivo
 docker compose run --rm --entrypoint bash ansible
 ```
+
+## Servicios Opcionales
+
+Los servicios opcionales se habilitan/deshabilitan en `inventory/production/group_vars/all.yml`:
+
+```yaml
+# ==============================================================================
+# OPTIONAL SERVICES - Enable/Disable
+# ==============================================================================
+lowcode_enable_gitea: true    # Git server
+lowcode_enable_docmost: true  # Documentation platform
+```
+
+### Dominios por defecto
+
+| Servicio | Dominio |
+|----------|---------|
+| Gitea    | `gitea.{lowcode_domain_base}` |
+| Docmost  | `docmost.{lowcode_domain_base}` |
+
+### Arquitectura Independiente
+
+Los servicios opcionales tienen sus propios contenedores de base de datos y cache:
+
+- **Gitea**: PostgreSQL propio (`gitea-db`) - independiente de Supabase
+- **Docmost**: PostgreSQL propio (`docmost-db`) + Redis propio (`docmost-redis`)
+- **n8n**: Redis propio (`n8n-redis`) para colas
+- Todos comparten la red Docker `lowcode-network` para comunicacion interna
+
+### ⚠️ Servicios Core (Solo Desarrollo)
+
+**IMPORTANTE**: Los siguientes servicios del core son **solo para desarrollo** y NO deben ser utilizados por otros contenedores o servicios:
+
+| Servicio | Contenedor | Proposito |
+|----------|------------|-----------|
+| Supabase PostgreSQL | `supabase-db` | Base de datos de Supabase - solo para desarrollo y pruebas |
+| Redis compartido | `lowcode-redis` | Cache de desarrollo - no usar en produccion |
+
+Los servicios opcionales (Gitea, Docmost, n8n) tienen sus propios contenedores de base de datos y cache para garantizar aislamiento y estabilidad en produccion.
 
 ## Configuracion
 
@@ -174,6 +232,8 @@ Los certificados SSL se generan automaticamente con Let's Encrypt.
 
 Todos los servicios están en la red Docker `lowcode-network` y pueden comunicarse entre sí usando los siguientes hostnames internos:
 
+### Core Services
+
 | Servicio | Hostname Interno | Puerto | Descripción |
 |----------|------------------|--------|-------------|
 | Supabase API | `supabase-kong` | 8000 | API REST y GraphQL |
@@ -182,6 +242,13 @@ Todos los servicios están en la red Docker `lowcode-network` y pueden comunicar
 | n8n | `lowcode-n8n` | 5678 | Workflow automation |
 | Appsmith | `lowcode-appsmith` | 80 | Low-code builder |
 | Redis | `lowcode-redis` | 6379 | Cache |
+
+### Optional Services
+
+| Servicio | Hostname Interno | Puerto | Descripción |
+|----------|------------------|--------|-------------|
+| Gitea | `lowcode-gitea` | 3000 | Git server (SSH: 22) |
+| Docmost | `lowcode-docmost` | 3000 | Documentation platform |
 
 ### Ejemplo: Conectar n8n a Supabase
 

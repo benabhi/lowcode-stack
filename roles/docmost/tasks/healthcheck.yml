@@ -1,0 +1,21 @@
+# ==============================================================================
+# Role: docmost - Health Check Tasks
+# ==============================================================================
+
+---
+- name: Wait for docmost to be healthy
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ docmost_http_port }}/api/health"
+    method: GET
+    status_code: 200
+  register: docmost_health
+  until: docmost_health.status == 200
+  retries: "{{ docmost_healthcheck_retries }}"
+  delay: "{{ docmost_healthcheck_delay }}"
+  become: true
+  ignore_errors: true
+
+- name: Display docmost health status
+  ansible.builtin.debug:
+    msg: "Docmost is healthy and responding on port {{ docmost_http_port }}"
+  when: docmost_health.status == 200

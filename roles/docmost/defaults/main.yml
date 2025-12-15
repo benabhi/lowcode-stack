@@ -1,0 +1,70 @@
+# ==============================================================================
+# Role: docmost - Default Variables
+# ==============================================================================
+
+---
+# Installation paths
+docmost_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/docmost"
+
+# Docker image configuration
+docmost_image: "docmost/docmost"
+docmost_version: "{{ lowcode_docmost_version | default('latest') }}"
+docmost_container_name: "{{ lowcode_docmost_container_name | default('lowcode-docmost') }}"
+
+# Network ports
+docmost_http_port: "{{ lowcode_docmost_port | default(3002) }}"
+
+# System user/group
+docmost_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+docmost_system_group: "{{ lowcode_system_group | default('lowcode') }}"
+
+# ==============================================================================
+# PostgreSQL Configuration - Own Container (Independent)
+# ==============================================================================
+docmost_postgres_image: "postgres"
+docmost_postgres_version: "15-alpine"
+docmost_postgres_container_name: "docmost-db"
+
+docmost_db_host: "{{ docmost_postgres_container_name }}"
+docmost_db_port: 5432
+docmost_db_name: "docmost"
+docmost_db_user: "docmost"
+docmost_db_password: "{{ lowcode_secrets.docmost_db_password | default('change-me-docmost-db-password') }}"
+
+# Database connection URL
+docmost_database_url: "postgresql://{{ docmost_db_user }}:{{ docmost_db_password }}@{{ docmost_db_host }}:{{ docmost_db_port }}/{{ docmost_db_name }}"
+
+# ==============================================================================
+# Redis Configuration - Own Container (Independent)
+# ==============================================================================
+docmost_redis_image: "redis"
+docmost_redis_version: "7-alpine"
+docmost_redis_container_name: "docmost-redis"
+
+docmost_redis_host: "{{ docmost_redis_container_name }}"
+docmost_redis_port: 6379
+docmost_redis_password: "{{ lowcode_secrets.docmost_redis_password | default('change-me-docmost-redis-password') }}"
+
+# Redis URL with authentication
+docmost_redis_url: "redis://:{{ docmost_redis_password }}@{{ docmost_redis_host }}:{{ docmost_redis_port }}"
+
+# ==============================================================================
+# Application Configuration
+# ==============================================================================
+docmost_app_url: "https://{{ lowcode_domain_docmost | default('docmost.' + lowcode_domain_base | default('localhost')) }}"
+docmost_app_secret: "{{ lowcode_secrets.docmost_app_secret | default('change-me-docmost-app-secret') }}"
+
+# Storage configuration
+docmost_storage_driver: "local"
+docmost_storage_path: "/app/data/storage"
+
+# ==============================================================================
+# Docker Network
+# ==============================================================================
+docmost_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# ==============================================================================
+# Health Check Configuration
+# ==============================================================================
+docmost_healthcheck_retries: "{{ lowcode_docmost_healthcheck_retries | default(12) }}"
+docmost_healthcheck_delay: "{{ lowcode_docmost_healthcheck_delay | default(10) }}"
