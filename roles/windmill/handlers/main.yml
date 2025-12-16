@@ -1,0 +1,10 @@
+# ==============================================================================
+# Role: windmill - Handlers
+# ==============================================================================
+
+---
+- name: Restart windmill
+  ansible.builtin.command:
+    cmd: docker compose restart
+    chdir: "{{ windmill_install_path }}"
+  become: true

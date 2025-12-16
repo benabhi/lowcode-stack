@@ -62,6 +62,8 @@ http {
     # Rate Limiting
     ##
     limit_req_zone $binary_remote_addr {{ nginx_rate_limit_zone }};
+    limit_req_status 429;
+    limit_req_log_level warn;
 {% endif %}
 
     ##

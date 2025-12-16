@@ -46,7 +46,8 @@ nginx_sites: "{{ nginx_sites | default([]) }}"
 nginx_optional_sites: "{{ nginx_optional_sites | default([]) }}"
 
 # All sites combined (core + enabled optional)
-nginx_all_sites: "{{ nginx_sites + (nginx_optional_sites | selectattr('enabled', 'defined') | selectattr('enabled') | list) }}"
+# Using 'truthy' test to properly evaluate boolean/truthy 'enabled' values
+nginx_all_sites: "{{ nginx_sites + (nginx_optional_sites | selectattr('enabled', 'defined') | selectattr('enabled', 'truthy') | list) }}"
 
 # Domains
 nginx_domain_supabase: "{{ lowcode_domain_supabase | default('supabase.localhost') }}"

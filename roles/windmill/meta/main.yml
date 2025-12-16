@@ -1,0 +1,20 @@
+# ==============================================================================
+# Role: windmill - Metadata
+# ==============================================================================
+
+---
+galaxy_info:
+  author: lowcode-stack
+  description: Windmill.dev developer platform deployment
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+
+dependencies:
+  - role: secrets
+    tags: [secrets, always]

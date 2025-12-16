@@ -1,0 +1,18 @@
+# ==============================================================================
+# Role: windmill - Health Check Tasks
+# ==============================================================================
+
+---
+- name: Wait for windmill to be healthy
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ windmill_http_port }}/api/version"
+    method: GET
+    status_code: 200
+  register: windmill_health
+  until: windmill_health.status == 200
+  retries: "{{ windmill_healthcheck_retries }}"
+  delay: "{{ windmill_healthcheck_delay }}"
+
+- name: Display windmill status
+  ansible.builtin.debug:
+    msg: "Windmill is healthy: {{ windmill_health.json | default('OK') }}"

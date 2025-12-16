@@ -19,6 +19,7 @@ El stack esta organizado en dos capas: **Core** (servicios base obligatorios) y 
 - **Gitea** - Servidor Git auto-hospedado (usa PostgreSQL propio)
 - **Docmost** - Plataforma de documentacion colaborativa (usa PostgreSQL y Redis propios)
 - **Moodle** - Sistema de gestion de aprendizaje (LMS) con MariaDB propio
+- **Windmill** - Plataforma de desarrollo (scripts, workflows, UI) con PostgreSQL propio
 
 ## Caracteristicas
 
@@ -102,7 +103,8 @@ docker compose run --rm ansible playbooks/site.yml
     ├── nginx/                  # Reverse proxy + SSL (core)
     ├── gitea/                  # Git server (optional)
     ├── docmost/                # Documentation (optional)
-    └── moodle/                 # LMS platform (optional)
+    ├── moodle/                 # LMS platform (optional)
+    └── windmill/               # Developer platform (optional)
 ```
 
 ## Comandos Utiles
@@ -131,6 +133,7 @@ docker compose run --rm ansible playbooks/site.yml --tags supabase --ask-pass
 docker compose run --rm ansible playbooks/site.yml --tags gitea --ask-pass
 docker compose run --rm ansible playbooks/site.yml --tags docmost --ask-pass
 docker compose run --rm ansible playbooks/site.yml --tags moodle --ask-pass
+docker compose run --rm ansible playbooks/site.yml --tags windmill --ask-pass
 
 # Reaplicar patch de watermark
 docker compose run --rm ansible playbooks/site.yml --tags watermark --ask-pass
@@ -147,9 +150,10 @@ Los servicios opcionales se habilitan/deshabilitan en `inventory/production/grou
 # ==============================================================================
 # OPTIONAL SERVICES - Enable/Disable
 # ==============================================================================
-lowcode_enable_gitea: true    # Git server
-lowcode_enable_docmost: true  # Documentation platform
-lowcode_enable_moodle: true   # LMS platform (Moodle)
+lowcode_enable_gitea: true      # Git server
+lowcode_enable_docmost: true    # Documentation platform
+lowcode_enable_moodle: true     # LMS platform (Moodle)
+lowcode_enable_windmill: true   # Developer platform (Windmill)
 ```
 
 ### Dominios por defecto
@@ -159,6 +163,7 @@ lowcode_enable_moodle: true   # LMS platform (Moodle)
 | Gitea    | `gitea.{lowcode_domain_base}` |
 | Docmost  | `docmost.{lowcode_domain_base}` |
 | Moodle   | `moodle.{lowcode_domain_base}` |
+| Windmill | `windmill.{lowcode_domain_base}` |
 
 ### Arquitectura Independiente
 
@@ -167,6 +172,7 @@ Los servicios opcionales tienen sus propios contenedores de base de datos y cach
 - **Gitea**: PostgreSQL propio (`gitea-db`) - independiente de Supabase
 - **Docmost**: PostgreSQL propio (`docmost-db`) + Redis propio (`docmost-redis`)
 - **Moodle**: MariaDB propio (`moodle-db`) - completamente independiente
+- **Windmill**: PostgreSQL propio (`windmill-db`) + Workers + LSP
 - **n8n**: Redis propio (`n8n-redis`) para colas
 - Todos comparten la red Docker `lowcode-network` para comunicacion interna
 
@@ -256,6 +262,7 @@ Todos los servicios están en la red Docker `lowcode-network` y pueden comunicar
 | Gitea | `lowcode-gitea` | 3000 | Git server (SSH: 22) |
 | Docmost | `lowcode-docmost` | 3000 | Documentation platform |
 | Moodle | `lowcode-moodle` | 8080 | LMS platform |
+| Windmill | `lowcode-windmill-server` | 8000 | Developer platform |
 
 ### Ejemplo: Conectar n8n a Supabase
 

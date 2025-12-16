@@ -152,6 +152,16 @@ nginx_optional_sites:
     max_body_size: "100M"                # Large file uploads for courses
     enabled: "{{ lowcode_enable_moodle | default(false) }}"
 
+  - name: "windmill"
+    domain: "{{ lowcode_domain_windmill }}"
+    upstream_host: "127.0.0.1"
+    upstream_port: "{{ lowcode_windmill_port }}"
+    basic_auth: false                    # Windmill has its own auth
+    websocket: true                      # Real-time updates
+    rate_limit: false                    # Disable rate limiting (loads many JS chunks)
+    max_body_size: "50M"
+    enabled: "{{ lowcode_enable_windmill | default(false) }}"
+
 # ==============================================================================
 # SUPABASE CONFIGURATION
 # ==============================================================================
@@ -254,9 +264,10 @@ common_reboot_if_required: false
 # OPTIONAL SERVICES - Enable/Disable
 # ==============================================================================
 # Set to true to enable optional services
-lowcode_enable_gitea: true
-lowcode_enable_docmost: true
-lowcode_enable_moodle: true                   # Moodle LMS
+lowcode_enable_gitea: false               # DISABLED - removed
+lowcode_enable_docmost: false             # DISABLED - removed
+lowcode_enable_moodle: true               # Moodle LMS
+lowcode_enable_windmill: true             # Windmill developer platform
 
 # ==============================================================================
 # GITEA CONFIGURATION (Optional - Git Server)
@@ -292,6 +303,19 @@ lowcode_moodle_container_name: "lowcode-moodle"
 lowcode_moodle_site_name: "CENT 40 - Moodle"
 lowcode_moodle_username: "admin"
 lowcode_moodle_email: "admin@{{ lowcode_domain_base }}"
+
+# ==============================================================================
+# WINDMILL CONFIGURATION (Optional - Developer Platform)
+# ==============================================================================
+lowcode_domain_windmill: "windmill.{{ lowcode_domain_base }}"
+lowcode_windmill_version: "main"
+lowcode_windmill_port: 8001
+lowcode_windmill_lsp_port: 3003
+lowcode_windmill_container_name: "lowcode-windmill"
+
+# Worker configuration
+lowcode_windmill_worker_replicas: 1
+lowcode_windmill_native_worker_replicas: 1
 
 # Firewall (UFW)
 common_firewall_enabled: true

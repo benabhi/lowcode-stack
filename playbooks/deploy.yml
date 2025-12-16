@@ -26,7 +26,7 @@
         msg:
           - "SERVICES DEPLOYMENT"
           - "Target: {{ inventory_hostname }} ({{ ansible_host }})"
-          - "Services: Redis, Supabase, Appsmith, n8n, Nginx"
+          - "Services: Redis, Supabase, Appsmith, n8n, Windmill (optional), Nginx"
       tags: always
 
   roles:
@@ -44,6 +44,10 @@
 
     - role: n8n
       tags: [n8n, deploy]
+
+    - role: windmill
+      tags: [windmill, deploy, optional]
+      when: lowcode_enable_windmill | default(false) | bool
 
     - role: nginx
       tags: [nginx, deploy]

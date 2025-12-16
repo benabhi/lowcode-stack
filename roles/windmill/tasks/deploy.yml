@@ -1,0 +1,62 @@
+# ==============================================================================
+# Role: windmill - Deployment Tasks
+# ==============================================================================
+
+---
+- name: Ensure windmill directory exists
+  ansible.builtin.file:
+    path: "{{ windmill_install_path }}"
+    state: directory
+    owner: "{{ windmill_system_user }}"
+    group: "{{ windmill_system_group }}"
+    mode: '0755'
+  become: true
+
+- name: Ensure windmill data directories exist
+  ansible.builtin.file:
+    path: "{{ windmill_install_path }}/{{ item }}"
+    state: directory
+    owner: "{{ windmill_system_user }}"
+    group: "{{ windmill_system_group }}"
+    mode: '0755'
+  become: true
+  loop:
+    - data
+    - data/postgres
+    - data/worker_cache
+    - data/worker_logs
+    - data/lsp_cache
+
+- name: Create Docker network if not exists
+  community.docker.docker_network:
+    name: "{{ windmill_docker_network }}"
+    state: present
+  become: true
+
+- name: Generate windmill docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ windmill_install_path }}/docker-compose.yml"
+    owner: "{{ windmill_system_user }}"
+    group: "{{ windmill_system_group }}"
+    mode: '0644'
+  become: true
+  notify: Restart windmill
+
+- name: Pull windmill Docker images
+  community.docker.docker_image:
+    name: "{{ item }}"
+    source: pull
+  become: true
+  loop:
+    - "{{ windmill_image }}:{{ windmill_version }}"
+    - "{{ windmill_lsp_image }}:{{ windmill_lsp_version }}"
+    - "{{ windmill_postgres_image }}:{{ windmill_postgres_version }}"
+
+- name: Start windmill stack with docker compose
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ windmill_install_path }}"
+  become: true
+  register: windmill_compose_up
+  changed_when: "'Started' in windmill_compose_up.stdout or 'Created' in windmill_compose_up.stdout"

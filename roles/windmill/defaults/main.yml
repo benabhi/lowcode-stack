@@ -1,0 +1,68 @@
+# ==============================================================================
+# Role: windmill - Default Variables
+# ==============================================================================
+
+---
+# Installation path
+windmill_install_path: "{{ lowcode_base_path | default('/opt/lowcode-stack') }}/windmill"
+
+# Docker images
+windmill_image: "ghcr.io/windmill-labs/windmill"
+windmill_version: "{{ lowcode_windmill_version | default('main') }}"
+windmill_lsp_image: "ghcr.io/windmill-labs/windmill-lsp"
+windmill_lsp_version: "latest"
+
+# Container settings
+windmill_container_name: "{{ lowcode_windmill_container_name | default('lowcode-windmill') }}"
+windmill_http_port: "{{ lowcode_windmill_port | default(8001) }}"
+windmill_lsp_port: "{{ lowcode_windmill_lsp_port | default(3003) }}"
+
+# App settings
+windmill_domain: "{{ lowcode_domain_windmill | default('windmill.localhost') }}"
+windmill_base_url: "https://{{ windmill_domain }}"
+
+# ==============================================================================
+# PostgreSQL Configuration - Own Container (Independent)
+# ==============================================================================
+windmill_postgres_image: "postgres"
+windmill_postgres_version: "16"
+windmill_postgres_container_name: "windmill-db"
+
+windmill_db_host: "{{ windmill_postgres_container_name }}"
+windmill_db_port: 5432
+windmill_db_name: "windmill"
+windmill_db_user: "postgres"
+windmill_db_password: "{{ lowcode_secrets.windmill_db_password | default('change-me-windmill-db-password') }}"
+
+# Database connection URL
+windmill_database_url: "postgres://{{ windmill_db_user }}:{{ windmill_db_password }}@{{ windmill_db_host }}:{{ windmill_db_port }}/{{ windmill_db_name }}?sslmode=disable"
+
+# ==============================================================================
+# Worker Configuration
+# ==============================================================================
+windmill_worker_replicas: "{{ lowcode_windmill_worker_replicas | default(1) }}"
+windmill_native_worker_replicas: "{{ lowcode_windmill_native_worker_replicas | default(1) }}"
+
+# Worker resource limits
+windmill_worker_cpu_limit: "1"
+windmill_worker_memory_limit: "2048M"
+
+# ==============================================================================
+# Docker Network
+# ==============================================================================
+windmill_docker_network: "{{ lowcode_docker_network | default('lowcode-network') }}"
+
+# ==============================================================================
+# Health Check Configuration
+# ==============================================================================
+windmill_healthcheck_retries: "{{ lowcode_windmill_healthcheck_retries | default(12) }}"
+windmill_healthcheck_delay: "{{ lowcode_windmill_healthcheck_delay | default(10) }}"
+
+# ==============================================================================
+# System User
+# ==============================================================================
+windmill_system_user: "{{ lowcode_system_user | default('lowcode') }}"
+windmill_system_group: "{{ lowcode_system_group | default('lowcode') }}"
+
+# Timezone
+windmill_timezone: "{{ lowcode_timezone | default('America/Argentina/Buenos_Aires') }}"

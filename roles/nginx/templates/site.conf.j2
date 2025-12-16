@@ -50,8 +50,8 @@ server {
     # Client body size
     client_max_body_size {{ item.max_body_size | default('50M') }};
 
-    # Static assets - no rate limiting
-    location ~* ^/(assets|static|_next|favicon\.ico|robots\.txt) {
+    # Static assets - no rate limiting, with caching
+    location ~* ^/(assets|static|_next|_app|build|chunks|favicon\.ico|robots\.txt|.*\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))$ {
         proxy_pass http://{{ item.name }}_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -63,10 +63,26 @@ server {
         add_header Cache-Control "public, immutable";
     }
 
-    # Proxy settings
+{% if item.websocket | default(false) %}
+    # WebSocket endpoint (for LSP, realtime, etc.) - no rate limiting
+    location /ws/ {
+        proxy_pass http://{{ item.name }}_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+        proxy_buffering off;
+    }
+{% endif %}
+
+    # Main proxy location
     location / {
-{% if nginx_rate_limit_enabled %}
-        # Rate limiting (only for non-static requests)
+{% if nginx_rate_limit_enabled and (item.rate_limit | default(true)) %}
+        # Rate limiting (can be disabled per-service with rate_limit: false)
         limit_req zone=api burst={{ nginx_rate_limit_burst }} nodelay;
 {% endif %}
 {% if item.basic_auth | default(false) %}
@@ -87,7 +103,7 @@ server {
         proxy_set_header X-Forwarded-Port $server_port;
 
 {% if item.websocket | default(false) %}
-        # WebSocket support
+        # WebSocket support for main location
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_read_timeout 86400;
