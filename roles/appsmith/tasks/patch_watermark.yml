@@ -23,8 +23,8 @@
   changed_when: false
 
 - name: Find AppViewer chunk file
-  ansible.builtin.command:
-    cmd: docker exec {{ appsmith_container_name }} sh -c 'ls {{ appsmith_chunk_path }}/AppViewer.*.chunk.js 2>/dev/null | head -1'
+  ansible.builtin.shell:
+    cmd: docker exec {{ appsmith_container_name }} sh -c "ls {{ appsmith_chunk_path }}/AppViewer.*.chunk.js 2>/dev/null | head -1"
   register: appviewer_chunk
   become: true
   changed_when: false
